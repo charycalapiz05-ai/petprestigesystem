@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost & Found Admin - Pet Prestige</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="admin-body" data-admin-page="true">
+<script src="../js/admin-guard.js"></script>
+<div class="admin-wrapper">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="admin-logo" style="padding:20px 16px;">
+            <a href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+                <img src="../images/logo-pet-prestige.png" alt="Pet Prestige" class="logo-img-main" style="height:54px;"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div class="logo-fallback" style="display:none;align-items:center;gap:8px;">
+                    <div class="logo-icon" style="font-size:1.6rem;">🐾</div>
+                    <div class="logo-text">
+                        <span class="logo-main" style="color:white;font-size:1rem;">Pet Prestige</span>
+                        <span class="logo-tagline" style="color:rgba(255,255,255,0.7);font-size:0.72rem;display:block;">Admin Panel</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <nav class="admin-nav">
+            <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="products.html"><i class="fas fa-box"></i> Products</a>
+            <a href="orders.html"><i class="fas fa-shopping-bag"></i> Orders</a>
+            <a href="customers.html"><i class="fas fa-users"></i> Customers</a>
+            <a href="reviews.html"><i class="fas fa-star"></i> Reviews</a>
+            <a href="lost-found-admin.html" class="active"><i class="fas fa-paw"></i> Lost & Found</a>
+            <a href="reports.html"><i class="fas fa-chart-bar"></i> Reports</a>
+            <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+        </nav>
+
+        <div class="admin-sidebar-bottom">
+            <a href="../index.html" target="_blank"><i class="fas fa-store"></i> View Store</a>
+            <a href="#" onclick="logoutAdmin()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <header class="admin-header">
+            <h1>Lost & Found Reports</h1>
+            <div class="admin-actions">
+                <input type="text" id="lfSearch" placeholder="Search by breed, location or name..." oninput="renderLFReports()">
+                <select id="lfTypeFilter" onchange="renderLFReports()">
+                    <option value="all">All Reports</option>
+                    <option value="lost">Lost Only</option>
+                    <option value="found">Found Only</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <div class="admin-card">
+                <div class="card-header">
+                    <h3>All Reports (<span id="lfCount">0</span>)</h3>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Photo</th>
+                                <th>Type</th>
+                                <th>Pet / Breed</th>
+                                <th>Location</th>
+                                <th>Contact</th>
+                                <th>Date</th>
+                                <th>Comments</th>
+                                <th>Verified</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lfAdminTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="deleteLFModal" style="display:none;">
+        <div class="modal-content" style="max-width:400px; text-align:center;">
+            <h3>Confirm Delete</h3>
+            <p>Are you sure you want to delete this report? This action cannot be undone.</p>
+            <div style="margin-top:30px;">
+                <button class="btn btn-outline" onclick="closeDeleteLFModal()">Cancel</button>
+                <button class="btn btn-danger" id="confirmDeleteLFBtn">Delete Report</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../js/admin-common.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/script.js"></script>
+<script src="../js/api-bridge.js"></script> <script>
+// Load and render all reports
+function renderLFReports() {
+    const reports = JSON.parse(localStorage.getItem('petPrestigeLF') || '[]');
+    const search = document.getElementById('lfSearch')?.value?.toLowerCase() || '';
+    const typeFilter = document.getElementById('lfTypeFilter')?.value || 'all';
+
+    let filtered = reports.filter(r => {
+        const matchSearch = !search || 
+            r.breed?.toLowerCase().includes(search) ||
+            r.name?.toLowerCase().includes(search) ||
+            r.location?.toLowerCase().includes(search) ||
+            r.description?.toLowerCase().includes(search);
+        const matchType = typeFilter === 'all' || r.type === typeFilter;
+        return matchSearch && matchType;
+    });
+
+    document.getElementById('lfCount').textContent = filtered.length;
+
+    const table = document.getElementById('lfAdminTable');
+    table.innerHTML = filtered.length ? filtered.map(r => `
+        <tr>
+            <td>
+                <img src="${r.image}" style="width:60px; height:50px; object-fit:cover; border-radius:6px;" 
+                     onerror="this.src='https://via.placeholder.com/60x50?text=No+Photo'">
+            </td>
+            <td><span class="status-badge ${r.type}">${r.type.toUpperCase()}</span></td>
+            <td>
+                <strong>${r.breed || 'Unknown'}</strong><br>
+                <small>${r.name !== 'Unknown' ? r.name : ''}</small>
+            </td>
+            <td>${r.location}</td>
+            <td>
+                ${r.contactName}<br>
+                <small>${r.contactPhone}</small>
+            </td>
+            <td>${r.date || '—'}</td>
+            <td>${(r.comments || []).length}</td>
+            <td>
+                ${r.verified
+                    ? '<span style="color:#27ae60;font-weight:700;">✓ Yes</span>'
+                    : '<span style="color:#aaa;">—</span>'}
+            </td>
+            <td>
+                <button class="btn btn-sm btn-primary" onclick="toggleVerifyLF(${r.id})" style="margin-bottom:4px;">
+                    ${r.verified ? 'Unverify' : '✓ Verify'}
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="confirmDeleteLF(${r.id})">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </td>
+        </tr>
+    `).join('') : '<tr><td colspan="9" style="text-align:center;padding:40px;color:#aaa;">No reports found.</td></tr>';
+}
+
+// Delete confirmation
+function confirmDeleteLF(id) {
+    if (confirm('Delete this Lost & Found report permanently?')) {
+        let reports = JSON.parse(localStorage.getItem('petPrestigeLF') || '[]');
+        reports = reports.filter(r => r.id !== id);
+        localStorage.setItem('petPrestigeLF', JSON.stringify(reports));
+        alert('Report deleted');
+        renderLFReports();
+    }
+}
+
+function toggleVerifyLF(id) {
+    var reports = JSON.parse(localStorage.getItem('petPrestigeLF') || '[]');
+    var r = reports.find(function(x){ return x.id === id; });
+    if (!r) return;
+    r.verified = !r.verified;
+    localStorage.setItem('petPrestigeLF', JSON.stringify(reports));
+    renderLFReports();
+    adminToast(r.verified ? 'Report verified ✓' : 'Verification removed.', 'success');
+}
+
+function logoutAdmin() {
+    if (confirm('Logout from admin panel?')) {
+        localStorage.removeItem('petPrestigeAdminSession');
+        localStorage.removeItem('petPrestigeUser');
+        window.location.href = '../login.html?logout=1';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    renderLFReports();
+});
+</script>
+</body>
+</html>

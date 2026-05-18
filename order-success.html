@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmed - Pet Prestige</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Leaflet for map tracking -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <style>
+        .success-section { min-height:80vh; display:flex; align-items:flex-start; justify-content:center; padding:40px 20px; background:#f8f9fa; }
+        .success-card { background:white; border-radius:20px; padding:40px; max-width:720px; width:100%; box-shadow:0 4px 30px rgba(0,0,0,0.08); }
+        .success-icon { width:80px; height:80px; background:linear-gradient(135deg,#27ae60,#2ecc71); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; font-size:2.2rem; color:white; }
+        .success-icon.pending { background:linear-gradient(135deg,#f39c12,#e67e22); }
+        .success-card h1 { text-align:center; font-size:1.7rem; color:#222; margin-bottom:6px; }
+        .order-id-badge { font-family:monospace; font-size:1rem; color:var(--primary); font-weight:700; background:#fff3ec; padding:5px 14px; border-radius:8px; display:inline-block; }
+        .order-id-wrap { text-align:center; margin-bottom:24px; }
+
+        /* Payment verification banner */
+        .pay-verify-banner { background:linear-gradient(135deg,#fff8e1,#fff3cd); border:1.5px solid #ffc107; border-radius:12px; padding:16px; margin-bottom:20px; display:flex; align-items:center; gap:14px; }
+        .pay-verify-banner .pv-icon { font-size:2rem; flex-shrink:0; }
+        .pay-verify-banner h4 { margin:0 0 4px; font-size:0.92rem; }
+        .pay-verify-banner p { margin:0; color:#666; font-size:0.82rem; }
+
+        /* Tracking steps */
+        .tracking-steps { display:flex; justify-content:space-between; margin:24px 0; position:relative; }
+        .tracking-steps::before { content:''; position:absolute; top:18px; left:10%; right:10%; height:2px; background:#eee; z-index:0; }
+        .tracking-step { display:flex; flex-direction:column; align-items:center; gap:6px; z-index:1; }
+        .tracking-step-dot { width:36px; height:36px; border-radius:50%; background:#eee; display:flex; align-items:center; justify-content:center; font-size:0.9rem; transition:all 0.3s; }
+        .tracking-step-dot.done   { background:#27ae60; color:white; }
+        .tracking-step-dot.active { background:var(--primary); color:white; box-shadow:0 0 0 4px rgba(255,107,53,0.2); animation:pulse 2s infinite; }
+        .tracking-step span { font-size:0.72rem; color:#888; text-align:center; }
+        @keyframes pulse { 0%,100%{box-shadow:0 0 0 4px rgba(255,107,53,0.2)} 50%{box-shadow:0 0 0 8px rgba(255,107,53,0.1)} }
+
+        /* Live tracking map */
+        .tracking-map-section { margin:20px 0; border-radius:14px; overflow:hidden; border:1.5px solid #eee; }
+        .tracking-map-header { background:var(--primary); color:white; padding:12px 16px; display:flex; align-items:center; gap:10px; }
+        .tracking-map-header .live-dot { width:8px; height:8px; background:#2ecc71; border-radius:50%; animation:blink 1.2s infinite; flex-shrink:0; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        #trackingMap { height:280px; width:100%; }
+        .tracking-map-footer { background:#f8f9fa; padding:10px 16px; font-size:0.82rem; color:#666; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+        .rider-info { display:flex; align-items:center; gap:10px; }
+        .rider-avatar { width:36px; height:36px; border-radius:50%; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+        .eta-badge { background:white; border:1.5px solid #eee; border-radius:20px; padding:4px 12px; font-size:0.8rem; font-weight:600; color:#333; }
+
+        /* Order detail grid */
+        .order-detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:20px 0; }
+        .order-detail-box { background:#f8f9fa; border-radius:12px; padding:14px; }
+        .order-detail-box h4 { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px; color:#888; margin:0 0 6px; }
+        .order-detail-box p { margin:0; font-size:0.88rem; color:#333; line-height:1.6; }
+
+        /* Subscription notice */
+        .sub-notice { background:linear-gradient(135deg,#f0f9ff,#e8f4fd); border:1.5px solid #b3d9f5; border-radius:12px; padding:14px 16px; margin:16px 0; display:flex; align-items:center; gap:12px; }
+        .sub-notice-icon { font-size:1.8rem; flex-shrink:0; }
+
+        /* Items */
+        .order-items-list { border:1.5px solid #eee; border-radius:12px; overflow:hidden; margin:16px 0; }
+        .order-item-row { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid #eee; }
+        .order-item-row:last-child { border-bottom:none; }
+        .order-item-img { width:48px; height:48px; object-fit:cover; border-radius:8px; flex-shrink:0; }
+        .order-item-name { flex:1; font-size:0.88rem; }
+        .order-item-price { font-weight:600; font-size:0.88rem; color:var(--primary); }
+
+        /* Totals */
+        .order-totals { background:#f8f9fa; border-radius:12px; padding:14px; margin-bottom:20px; }
+        .order-total-row { display:flex; justify-content:space-between; padding:5px 0; font-size:0.88rem; color:#555; }
+        .order-total-row.grand { font-size:1rem; font-weight:700; color:#222; border-top:1.5px solid #ddd; margin-top:6px; padding-top:10px; }
+
+        /* Actions */
+        .success-actions { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:20px; }
+
+        @media (max-width:600px) {
+            .order-detail-grid { grid-template-columns:1fr; }
+            .success-card { padding:24px 16px; }
+            #trackingMap { height:220px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-wrapper">
+                <a href="index.html" class="logo">
+                    <img src="images/logo-pet-prestige.png" alt="Pet Prestige" class="logo-img-main"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                    <div class="logo-fallback" style="display:none;align-items:center;gap:10px;">
+                        <div class="logo-icon">🐾</div>
+                        <div class="logo-text">
+                            <span class="logo-main">Pet Prestige</span>
+                            <span class="logo-tagline">Premium Pet Care</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="success-section">
+        <div class="success-card" id="successCard">
+            <div id="successIconWrap" class="success-icon"><i class="fas fa-check"></i></div>
+            <h1 id="successTitle">Order Confirmed! 🐾</h1>
+            <p id="successSubtitle" style="text-align:center;color:#666;margin-bottom:12px;">Thank you for shopping at Pet Prestige!</p>
+            <div class="order-id-wrap">
+                <div class="order-id-badge" id="displayOrderId">Loading...</div>
+            </div>
+
+            <!-- Payment verification banner (shown for non-COD) -->
+            <div id="payVerifyBanner" class="pay-verify-banner" style="display:none;">
+                <div class="pv-icon" id="pvIcon">⏳</div>
+                <div>
+                    <h4 id="pvTitle">Awaiting Payment Verification</h4>
+                    <p id="pvMsg">We received your payment reference. Our team will verify it within 1 business hour and update your order status.</p>
+                </div>
+            </div>
+
+            <!-- Tracking steps -->
+            <div class="tracking-steps" id="trackingSteps"></div>
+
+            <!-- Live Rider Map (shown when status = shipped) -->
+            <div class="tracking-map-section" id="trackingMapSection" style="display:none;">
+                <div class="tracking-map-header">
+                    <div class="live-dot"></div>
+                    <strong>Live Delivery Tracking</strong>
+                    <span style="margin-left:auto;font-size:0.78rem;opacity:0.85;" id="mapLastUpdated">Updating...</span>
+                </div>
+                <div id="trackingMap"></div>
+                <div class="tracking-map-footer">
+                    <div class="rider-info">
+                        <div class="rider-avatar"><i class="fas fa-motorcycle"></i></div>
+                        <div>
+                            <div style="font-weight:600;font-size:0.85rem;" id="riderName">Juan Dela Cruz</div>
+                            <a id="riderPhone" href="tel:09171234567" style="color:var(--primary);font-size:0.78rem;">
+                                <i class="fas fa-phone"></i> <span>09171234567</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="eta-badge">🕐 ETA: <span id="etaDisplay">~30 min</span></div>
+                </div>
+            </div>
+
+            <!-- Subscription notice -->
+            <div id="subNotice" class="sub-notice" style="display:none;">
+                <div class="sub-notice-icon">🔄</div>
+                <div>
+                    <div style="font-weight:700;font-size:0.9rem;margin-bottom:2px;">Subscription Active!</div>
+                    <div style="color:#555;font-size:0.82rem;" id="subNoticeText">Your next delivery is scheduled.</div>
+                    <a href="profile.html" style="font-size:0.8rem;color:var(--primary);font-weight:600;">Manage in Profile →</a>
+                </div>
+            </div>
+
+            <!-- Order Details -->
+            <div class="order-detail-grid" id="orderDetailGrid"></div>
+            <div class="order-items-list" id="orderItemsList"></div>
+            <div class="order-totals" id="orderTotals"></div>
+
+            <p style="color:#888;font-size:0.82rem;text-align:center;margin-bottom:20px;">
+                <i class="fas fa-clock"></i> Delivery within <strong>1–3 business days</strong>. You'll receive updates in your profile.
+            </p>
+
+            <div class="success-actions">
+                <button onclick="window.print()" class="btn btn-outline"><i class="fas fa-print"></i> Print Receipt</button>
+                <a href="profile.html" class="btn btn-outline"><i class="fas fa-list"></i> My Orders</a>
+                <a href="shop.html" class="btn btn-primary"><i class="fas fa-store"></i> Continue Shopping</a>
+            </div>
+        </div>
+    </section>
+
+<script src="js/api.js"></script>
+<script src="js/script.js"></script>
+<script src="js/api-bridge.js"></script> <script>
+    var STATUS_STEPS = [
+        { key:'pending',             label:'Order Placed',    icon:'fas fa-check' },
+        { key:'payment_verification',label:'Verifying Pay.',  icon:'fas fa-search-dollar' },
+        { key:'processing',          label:'Processing',      icon:'fas fa-cog' },
+        { key:'shipped',             label:'Out for Delivery', icon:'fas fa-motorcycle' },
+        { key:'delivered',           label:'Delivered',       icon:'fas fa-home' }
+    ];
+    // Step order for progress
+    var STEP_ORDER = ['pending','payment_verification','processing','shipped','delivered'];
+
+    var _trackingMap   = null;
+    var _riderMarker   = null;
+    var _destMarker    = null;
+    var _trackInterval = null;
+    var _currentOrder  = null;
+
+    function renderTrackingSteps(status) {
+        var currentIdx = STEP_ORDER.indexOf(status);
+        if (currentIdx < 0) currentIdx = 0;
+        // Skip payment_verification step for COD orders
+        var steps = _currentOrder && _currentOrder.paymentInfo && _currentOrder.paymentInfo.method === 'cod'
+            ? STATUS_STEPS.filter(function(s){ return s.key !== 'payment_verification'; })
+            : STATUS_STEPS;
+        var ci = steps.findIndex(function(s){ return s.key === status; });
+        if (ci < 0) ci = 0;
+        return steps.map(function(step, i) {
+            var isDone   = i < ci;
+            var isActive = i === ci;
+            return '<div class="tracking-step">' +
+                '<div class="tracking-step-dot ' + (isDone ? 'done' : isActive ? 'active' : '') + '">' +
+                '<i class="' + step.icon + '"></i></div>' +
+                '<span>' + step.label + '</span></div>';
+        }).join('');
+    }
+
+    // ── Live Leaflet map ──────────────────────────────────────────
+    function initTrackingMap(order) {
+        // Use shipping city to get approximate destination coords
+        // Default to Metro Manila if we can't determine
+        var destCoords = getCityCoords(order.shippingInfo ? order.shippingInfo.city : '');
+        var riderStart = [destCoords[0] + 0.02, destCoords[1] - 0.02]; // Rider starts ~2km away
+
+        if (_trackingMap) {
+            _trackingMap.remove();
+            _trackingMap = null;
+        }
+
+        _trackingMap = L.map('trackingMap', { zoomControl:true, attributionControl:false }).setView(destCoords, 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:18 }).addTo(_trackingMap);
+
+        // Destination marker
+        var destIcon = L.divIcon({
+            html: '<div style="background:var(--primary,#FF6B35);color:white;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:1rem;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);">🏠</div>',
+            iconSize:[34,34], iconAnchor:[17,17], className:''
+        });
+        _destMarker = L.marker(destCoords, {icon:destIcon}).addTo(_trackingMap)
+            .bindPopup('<strong>Delivery Address</strong><br>' + (order.shippingInfo ? order.shippingInfo.address + ', ' + order.shippingInfo.city : 'Destination'));
+
+        // Rider marker
+        var riderIcon = L.divIcon({
+            html: '<div style="background:#FF6B35;color:white;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;border:3px solid white;box-shadow:0 2px 10px rgba(255,107,53,0.5);animation:riderPulse 2s infinite;" id="riderDot">🏍️</div>',
+            iconSize:[38,38], iconAnchor:[19,19], className:''
+        });
+        _riderMarker = L.marker(riderStart, {icon:riderIcon}).addTo(_trackingMap)
+            .bindPopup('<strong>Your Rider</strong><br>' + (order.trackingInfo ? order.trackingInfo.riderName : 'Rider'));
+
+        // Route line (straight for demo)
+        L.polyline([riderStart, destCoords], {color:'#FF6B35', weight:3, dashArray:'8,6', opacity:0.7}).addTo(_trackingMap);
+
+        // Animate rider toward destination
+        simulateRiderMovement(riderStart, destCoords);
+
+        document.getElementById('trackingMapSection').style.display = 'block';
+
+        if (order.trackingInfo) {
+            var nameEl  = document.getElementById('riderName');
+            var phoneEl = document.getElementById('riderPhone');
+            if (nameEl  && order.trackingInfo.riderName)  nameEl.textContent  = order.trackingInfo.riderName;
+            if (phoneEl && order.trackingInfo.riderPhone) phoneEl.href = 'tel:' + order.trackingInfo.riderPhone;
+        }
+    }
+
+    function getCityCoords(city) {
+        city = (city || '').toLowerCase();
+        var cityMap = {
+            'manila':['14.5995','120.9842'], 'makati':['14.5547','121.0244'],
+            'quezon city':['14.6760','121.0437'], 'quezon':['14.6760','121.0437'],
+            'taguig':['14.5176','121.0509'], 'pasig':['14.5764','121.0851'],
+            'mandaluyong':['14.5794','121.0359'], 'marikina':['14.6507','121.1029'],
+            'pasay':['14.5378','120.9981'], 'caloocan':['14.6498','120.9692'],
+            'cebu':['10.3157','123.8854'], 'davao':['7.1907','125.4553'],
+            'cagayan':['8.4822','124.6472'], 'iloilo':['10.7202','122.5621'],
+            'zamboanga':['6.9214','122.0790']
+        };
+        for (var key in cityMap) {
+            if (city.includes(key)) {
+                return [parseFloat(cityMap[key][0]), parseFloat(cityMap[key][1])];
+            }
+        }
+        return [14.5995, 120.9842]; // Default: Manila
+    }
+
+    function simulateRiderMovement(start, dest) {
+        if (_trackInterval) clearInterval(_trackInterval);
+        var steps = 60; // 60 steps
+        var step  = 0;
+        var lat0 = start[0], lng0 = start[1];
+        var lat1 = parseFloat(dest[0]), lng1 = parseFloat(dest[1]);
+
+        _trackInterval = setInterval(function() {
+            step++;
+            var t = step / steps;
+            // Add slight jitter for realism
+            var jitter = (Math.random() - 0.5) * 0.0002;
+            var curLat = lat0 + (lat1 - lat0) * t + jitter;
+            var curLng = lng0 + (lng1 - lng0) * t + jitter;
+            if (_riderMarker) _riderMarker.setLatLng([curLat, curLng]);
+
+            var minsLeft = Math.max(1, Math.round((1 - t) * 30));
+            var etaEl = document.getElementById('etaDisplay');
+            if (etaEl) etaEl.textContent = minsLeft <= 1 ? 'Arriving!' : '~' + minsLeft + ' min';
+
+            var updEl = document.getElementById('mapLastUpdated');
+            if (updEl) updEl.textContent = 'Updated ' + new Date().toLocaleTimeString('en-PH', {hour:'2-digit', minute:'2-digit'});
+
+            if (step >= steps) {
+                clearInterval(_trackInterval);
+                if (etaEl) etaEl.textContent = 'Arrived!';
+            }
+        }, 3000); // Update every 3s
+    }
+
+    // ── Render full order ─────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCartCount();
+        var params  = new URLSearchParams(window.location.search);
+        var orderId = params.get('order');
+        var orders  = JSON.parse(localStorage.getItem('petPrestigeOrders') || '[]');
+        var order   = orderId ? orders.find(function(o){ return o.id === orderId; }) : orders[orders.length-1];
+
+        if (!order) {
+            document.getElementById('successCard').innerHTML =
+                '<p style="text-align:center;padding:40px;color:#aaa;">No order found. <a href="shop.html">Continue shopping</a></p>';
+            return;
+        }
+        _currentOrder = order;
+        if (!orderId) history.replaceState(null,'','?order=' + order.id);
+        renderOrder(order);
+    });
+
+    function renderOrder(order) {
+        document.getElementById('displayOrderId').textContent = order.id;
+
+        // Icon + title based on payment status
+        var isPending = order.status === 'payment_verification';
+        var iconWrap  = document.getElementById('successIconWrap');
+        if (isPending && iconWrap) {
+            iconWrap.className = 'success-icon pending';
+            iconWrap.innerHTML = '<i class="fas fa-clock"></i>';
+            document.getElementById('successTitle').textContent = 'Order Received!';
+            document.getElementById('successSubtitle').textContent = 'Awaiting payment verification.';
+        }
+
+        // Payment verification banner
+        if (isPending) {
+            var banner = document.getElementById('payVerifyBanner');
+            var method = order.paymentInfo ? order.paymentInfo.method : '';
+            var icons  = { gcash:'📱', maya:'📱', bank:'🏦' };
+            var names  = { gcash:'GCash', maya:'Maya', bank:'Bank Transfer' };
+            if (banner) {
+                banner.style.display = 'flex';
+                var pvIcon = document.getElementById('pvIcon');
+                if (pvIcon) pvIcon.textContent = icons[method] || '⏳';
+                var pvTitle = document.getElementById('pvTitle');
+                if (pvTitle) pvTitle.textContent = 'Verifying Your ' + (names[method]||'Payment');
+                if (order.paymentInfo && order.paymentInfo.ref) {
+                    var pvMsg = document.getElementById('pvMsg');
+                    if (pvMsg) pvMsg.textContent = 'Reference: ' + order.paymentInfo.ref + '. We\'ll confirm within 1 business hour.';
+                }
+            }
+        }
+
+        // Tracking steps
+        document.getElementById('trackingSteps').innerHTML = renderTrackingSteps(order.status);
+
+        // Show map for shipped orders
+        if (order.status === 'shipped') {
+            setTimeout(function(){ initTrackingMap(order); }, 300);
+        }
+
+        // Subscription notice
+        if (order.subscription) {
+            var sub = order.subscription;
+            var subEl = document.getElementById('subNotice');
+            if (subEl) subEl.style.display = 'flex';
+            var subText = document.getElementById('subNoticeText');
+            var freqLabel = { monthly:'Every month', bimonthly:'Every 2 months', quarterly:'Every 3 months' };
+            if (subText) subText.textContent = freqLabel[sub.frequency] || 'Monthly' + ' delivery. Next: ' + sub.nextDelivery + '. 10% off every order.';
+        }
+
+        // Detail grid
+        var payLabels = { cod:'💵 Cash on Delivery', gcash:'📱 GCash', maya:'📱 Maya', bank:'🏦 Bank Transfer' };
+        var method    = order.paymentInfo ? order.paymentInfo.method : 'cod';
+        var refLine   = (order.paymentInfo && order.paymentInfo.ref) ? '<br><small style="color:#888;">Ref: ' + order.paymentInfo.ref + '</small>' : '';
+        document.getElementById('orderDetailGrid').innerHTML =
+            '<div class="order-detail-box">' +
+            '<h4>Ship To</h4>' +
+            '<p>' + (order.shippingInfo ? order.shippingInfo.firstName + ' ' + order.shippingInfo.lastName + '<br>' +
+            order.shippingInfo.phone + '<br>' +
+            order.shippingInfo.address + ', ' + order.shippingInfo.city + '<br>' +
+            order.shippingInfo.province + ' ' + order.shippingInfo.postal : 'N/A') + '</p>' +
+            '</div>' +
+            '<div class="order-detail-box">' +
+            '<h4>Payment</h4><p>' + (payLabels[method] || method) + refLine + '</p>' +
+            '<h4 style="margin-top:10px;">Order Date</h4>' +
+            '<p>' + new Date(order.date).toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'}) + '</p>' +
+            '</div>';
+
+        // Items
+        document.getElementById('orderItemsList').innerHTML = (order.items||[]).map(function(item) {
+            return '<div class="order-item-row">' +
+                '<img class="order-item-img" src="' + item.image + '" alt="' + item.name + '" onerror="this.src=\'https://via.placeholder.com/48?text=P\'">' +
+                '<div class="order-item-name">' + item.name + ' <span style="color:#aaa;">×' + item.quantity + '</span></div>' +
+                '<div class="order-item-price">₱' + (item.price * item.quantity).toLocaleString() + '</div></div>';
+        }).join('');
+
+        // Totals
+        var shipping = order.shippingCost || 0;
+        var discount = order.discount || 0;
+        var subDisc  = order.subscription ? Math.round((order.subtotal||0) * 0.10) : 0;
+        document.getElementById('orderTotals').innerHTML =
+            '<div class="order-total-row"><span>Subtotal</span><span>₱' + (order.subtotal||0).toLocaleString() + '</span></div>' +
+            '<div class="order-total-row"><span>Shipping</span><span>' + (shipping===0?'FREE':'₱'+shipping.toLocaleString()) + '</span></div>' +
+            (discount>0 ? '<div class="order-total-row"><span>Voucher Discount</span><span style="color:#27ae60;">-₱'+discount.toLocaleString()+'</span></div>' : '') +
+            (subDisc>0  ? '<div class="order-total-row"><span>Subscribe &amp; Save (10%)</span><span style="color:#2980b9;">-₱'+subDisc.toLocaleString()+'</span></div>' : '') +
+            '<div class="order-total-row grand"><span>Total</span><span>₱' + (order.total||0).toLocaleString() + '</span></div>';
+    }
+    </script>
+</body>
+</html>

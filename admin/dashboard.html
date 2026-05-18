@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Pet Prestige</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .low-stock-alert {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border: 1.5px solid #f39c12;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+        }
+        .low-stock-alert h4 { color: #e67e22; margin: 0 0 10px; font-size: 0.95rem; }
+        .low-stock-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 6px 0; border-bottom: 1px solid rgba(243,156,18,0.2); font-size: 0.88rem;
+        }
+        .low-stock-item:last-child { border-bottom: none; }
+        .low-stock-badge { background: #e74c3c; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.78rem; font-weight: 600; }
+        .stat-card { transition: transform 0.2s; cursor: default; }
+        .stat-card:hover { transform: translateY(-3px); }
+        .stat-trend { font-size: 0.78rem; margin-top: 4px; }
+        .trend-up { color: #27ae60; }
+        .trend-down { color: #e74c3c; }
+        .dashboard-refresh { background: none; border: 1.5px solid #ddd; border-radius: 8px; padding: 6px 14px; cursor: pointer; font-size: 0.85rem; color: #666; margin-right: 12px; }
+        .dashboard-refresh:hover { background: #f8f9fa; }
+        .empty-chart { display: flex; align-items: center; justify-content: center; height: 180px; color: #bbb; font-size: 0.9rem; flex-direction: column; gap: 8px; }
+    </style>
+</head>
+<body class="admin-body" data-admin-page="true">
+<script src="../js/admin-guard.js"></script>
+<div class="admin-wrapper">
+    <aside class="admin-sidebar">
+        <div class="admin-logo" style="padding:20px 16px;">
+            <a href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+                <img src="../images/logo-pet-prestige.png" alt="Pet Prestige" style="height:44px;"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div style="display:none;align-items:center;gap:8px;">
+                    <span style="font-size:1.6rem;">🐾</span>
+                    <div>
+                        <div style="color:white;font-weight:700;font-size:1rem;line-height:1.1;">Pet Prestige</div>
+                        <div style="color:rgba(255,255,255,0.7);font-size:0.72rem;">Admin Panel</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <nav class="admin-nav">
+            <a href="dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="products.html"><i class="fas fa-box"></i> Products</a>
+            <a href="orders.html"><i class="fas fa-shopping-bag"></i> Orders <span class="badge" id="pendingOrders">0</span></a>
+            <a href="customers.html"><i class="fas fa-users"></i> Customers</a>
+            <a href="reviews.html"><i class="fas fa-star"></i> Reviews</a>
+            <a href="lost-found-admin.html"><i class="fas fa-paw"></i> Lost & Found</a>
+            <a href="community-admin.html"><i class="fas fa-comments"></i> Community</a>
+            <a href="reports.html"><i class="fas fa-chart-bar"></i> Reports</a>
+            <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+        </nav>
+        <div class="admin-sidebar-bottom">
+            <a href="../index.html" target="_blank"><i class="fas fa-store"></i> View Store</a>
+            <a href="#" onclick="logoutAdmin()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <h1>Dashboard</h1>
+            <div class="admin-user">
+                <button class="dashboard-refresh" onclick="initDashboard()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                <span>Welcome, Admin</span>
+                <i class="fas fa-user-circle"></i>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <div id="lowStockBanner"></div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-peso-sign"></i></div>
+                    <div class="stat-info">
+                        <h3>Total Revenue</h3>
+                        <p id="totalSales">₱0.00</p>
+                        <div class="stat-trend" id="revenueTrend"></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+                    <div class="stat-info">
+                        <h3>Total Orders</h3>
+                        <p id="totalOrders">0</p>
+                        <div class="stat-trend" id="ordersTrend"></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <h3>Customers</h3>
+                        <p id="totalCustomers">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-box"></i></div>
+                    <div class="stat-info">
+                        <h3>Products</h3>
+                        <p id="totalProducts">0</p>
+                        <div class="stat-trend" id="stockTrend"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="admin-card">
+                    <h3>Sales Overview (Last 6 Months)</h3>
+                    <div id="salesChartWrap"><canvas id="salesChart" height="200"></canvas></div>
+                </div>
+
+                <div class="admin-card">
+                    <h3>Recent Orders</h3>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="recentOrdersTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="admin-card">
+                    <h3>Orders by Status</h3>
+                    <div id="categoryChartWrap"><canvas id="categoryChart" height="200"></canvas></div>
+                </div>
+
+                <div class="admin-card quick-actions">
+                    <h3>Quick Actions</h3>
+                    <a href="products.html" class="btn btn-primary btn-block" style="margin-bottom:10px;"><i class="fas fa-plus"></i> Add New Product</a>
+                    <a href="orders.html" class="btn btn-outline btn-block" style="margin-bottom:10px;"><i class="fas fa-list"></i> View All Orders</a>
+                    <a href="reports.html" class="btn btn-outline btn-block" style="margin-bottom:10px;"><i class="fas fa-chart-line"></i> Full Reports</a>
+                    <a href="settings.html" class="btn btn-outline btn-block"><i class="fas fa-ticket-alt"></i> Manage Vouchers</a>
+                </div>
+
+                <!-- Activity Log Card -->
+                <div class="admin-card" style="grid-column:1/-1;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                        <h3 style="margin:0;">Recent Activity</h3>
+                        <button onclick="clearActivityLog()" class="btn btn-outline btn-sm" style="font-size:0.8rem;">Clear Log</button>
+                    </div>
+                    <div id="activityLogFeed" style="max-height:320px;overflow-y:auto;"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="../js/admin-common.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/script.js"></script>
+<script src="../js/api-bridge.js"></script> <script>
+    let salesChartInstance = null;
+    let categoryChartInstance = null;
+
+    function getOrders() { return JSON.parse(localStorage.getItem('petPrestigeOrders') || '[]'); }
+    function getAllProducts() { return [...(typeof DB !== 'undefined' ? DB.products : []), ...JSON.parse(localStorage.getItem('petPrestigeCustomProducts') || '[]')]; }
+
+    function initDashboard() {
+        const orders = getOrders();
+        const allProducts = getAllProducts();
+        const pending = orders.filter(o => o.status === 'pending').length;
+        const totalRevenue = orders.reduce((s, o) => s + (o.total || 0), 0);
+        const customers = new Set(orders.map(o => o.shippingInfo?.email).filter(Boolean)).size;
+
+        const el = id => document.getElementById(id);
+        if (el('pendingOrders')) el('pendingOrders').textContent = pending;
+        if (el('totalSales')) el('totalSales').textContent = '₱' + totalRevenue.toLocaleString('en-PH', {minimumFractionDigits:2,maximumFractionDigits:2});
+        if (el('totalOrders')) el('totalOrders').textContent = orders.length;
+        if (el('totalCustomers')) el('totalCustomers').textContent = customers;
+        if (el('totalProducts')) el('totalProducts').textContent = allProducts.length;
+
+        if (el('ordersTrend')) el('ordersTrend').innerHTML = pending > 0
+            ? `<span class="trend-down"><i class="fas fa-exclamation-circle"></i> ${pending} pending</span>`
+            : `<span class="trend-up"><i class="fas fa-check-circle"></i> All fulfilled</span>`;
+
+        // Low stock alert
+        const lowStockThreshold = JSON.parse(localStorage.getItem('petPrestigeShippingSettings') || '{}').lowStockThreshold ?? 5;
+        const lowStock = allProducts.filter(p => (p.stock || 0) <= lowStockThreshold && p.stock !== undefined);
+        const banner = el('lowStockBanner');
+        if (banner) {
+            if (lowStock.length > 0) {
+                banner.innerHTML = `<div class="low-stock-alert">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Low Stock Alert — ${lowStock.length} product${lowStock.length > 1 ? 's' : ''} running low</h4>
+                    ${lowStock.slice(0,5).map(p => `<div class="low-stock-item"><span>${p.name}</span><span class="low-stock-badge">${p.stock} left</span></div>`).join('')}
+                    ${lowStock.length > 5 ? `<div style="text-align:center;margin-top:8px;font-size:0.85rem;"><a href="products.html" style="color:#e67e22;">View all ${lowStock.length} low-stock products →</a></div>` : ''}
+                </div>`;
+                if (el('stockTrend')) el('stockTrend').innerHTML = `<span class="trend-down"><i class="fas fa-arrow-down"></i> ${lowStock.length} low stock</span>`;
+            } else {
+                banner.innerHTML = '';
+                if (el('stockTrend')) el('stockTrend').innerHTML = `<span class="trend-up"><i class="fas fa-check-circle"></i> Stock healthy</span>`;
+            }
+        }
+
+        // Recent orders (last 5)
+        const recent = [...orders].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0,5);
+        const tbody = el('recentOrdersTable');
+        if (tbody) {
+            tbody.innerHTML = recent.length ? recent.map(o => `
+                <tr>
+                    <td><strong>${o.id}</strong></td>
+                    <td>${o.shippingInfo?.firstName||''} ${o.shippingInfo?.lastName||''}</td>
+                    <td>₱${(o.total||0).toLocaleString()}</td>
+                    <td><span class="status-badge ${o.status}">${o.status}</span></td>
+                    <td>${new Date(o.date).toLocaleDateString()}</td>
+                    <td><a href="orders.html" class="btn btn-sm">View</a></td>
+                </tr>`).join('')
+                : '<tr><td colspan="6" style="text-align:center;padding:30px;color:#aaa;">No orders yet.</td></tr>';
+        }
+
+        renderCharts(orders);
+    }
+
+    function renderCharts(orders) {
+        if (salesChartInstance) { salesChartInstance.destroy(); salesChartInstance = null; }
+        if (categoryChartInstance) { categoryChartInstance.destroy(); categoryChartInstance = null; }
+
+        // Sales last 6 months
+        const now = new Date();
+        const months = [];
+        const salesByMonth = {};
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const label = d.toLocaleString('default', { month: 'short', year: '2-digit' });
+            months.push(label);
+            salesByMonth[label] = 0;
+        }
+        orders.forEach(o => {
+            const d = new Date(o.date);
+            const label = d.toLocaleString('default', { month: 'short', year: '2-digit' });
+            if (Object.prototype.hasOwnProperty.call(salesByMonth, label)) salesByMonth[label] += (o.total || 0);
+        });
+
+        const salesWrap = document.getElementById('salesChartWrap');
+        const salesCtxEl = document.getElementById('salesChart');
+        if (salesCtxEl) {
+            const hasData = Object.values(salesByMonth).some(v => v > 0);
+            if (!hasData) {
+                if (salesWrap) salesWrap.innerHTML = '<div class="empty-chart"><i class="fas fa-chart-line" style="font-size:2rem;"></i><span>No sales data yet</span></div>';
+            } else {
+                salesChartInstance = new Chart(salesCtxEl.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: months,
+                        datasets: [{ label: 'Revenue (₱)', data: months.map(m => salesByMonth[m]), borderColor: '#FF6B35', backgroundColor: 'rgba(255,107,53,0.12)', tension: 0.4, fill: true, pointBackgroundColor: '#FF6B35', pointRadius: 4 }]
+                    },
+                    options: { responsive: true, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+                });
+            }
+        }
+
+        // Orders by status
+        const statusCount = { pending:0, processing:0, shipped:0, delivered:0, cancelled:0 };
+        orders.forEach(o => { if (Object.prototype.hasOwnProperty.call(statusCount, o.status)) statusCount[o.status]++; });
+        const catWrap = document.getElementById('categoryChartWrap');
+        const catCtxEl = document.getElementById('categoryChart');
+        if (catCtxEl) {
+            const hasData = Object.values(statusCount).some(v => v > 0);
+            if (!hasData) {
+                if (catWrap) catWrap.innerHTML = '<div class="empty-chart"><i class="fas fa-chart-pie" style="font-size:2rem;"></i><span>No order data yet</span></div>';
+            } else {
+                categoryChartInstance = new Chart(catCtxEl.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending','Processing','Shipped','Delivered','Cancelled'],
+                        datasets: [{ data: Object.values(statusCount), backgroundColor: ['#f39c12','#3498db','#9b59b6','#27ae60','#e74c3c'] }]
+                    },
+                    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                });
+            }
+        }
+    }
+
+    function logoutAdmin() {
+        if (confirm('Are you sure you want to logout?')) {
+            localStorage.removeItem('petPrestigeAdminSession');
+            localStorage.removeItem('petPrestigeUser');
+            window.location.href = '../login.html?logout=1';
+        }
+    }
+
+    function clearActivityLog() {
+        if (!confirm('Clear all activity log entries?')) return;
+        ActivityLog.clear();
+        renderActivityLog();
+        adminToast('Activity log cleared.', 'info');
+    }
+
+    function renderActivityLog() {
+        const feed = document.getElementById('activityLogFeed');
+        if (!feed) return;
+        const logs = ActivityLog.get(50);
+        const catIcon = { orders:'📦', products:'🛍️', customers:'👤', general:'⚙️', auth:'🔐' };
+        if (!logs.length) {
+            feed.innerHTML = '<p style="text-align:center;color:#aaa;padding:20px;">No activity recorded yet.</p>';
+            return;
+        }
+        feed.innerHTML = logs.map(function(l) {
+            const d = new Date(l.time);
+            const timeStr = d.toLocaleDateString('en-PH',{month:'short',day:'numeric'}) + ' ' +
+                            d.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
+            const detail = l.detail ? ' <span style="color:#888;font-weight:400;font-size:0.85rem;">— ' + l.detail + '</span>' : '';
+            return '<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #f0f0f0;">' +
+                '<span style="font-size:1.1rem;flex-shrink:0;">' + (catIcon[l.category] || '&#9881;') + '</span>' +
+                '<div style="flex:1;min-width:0;">' +
+                '<div style="font-weight:600;font-size:0.88rem;">' + l.action + detail + '</div>' +
+                '<div style="color:#aaa;font-size:0.78rem;margin-top:2px;">' + l.actor + ' &middot; ' + timeStr + '</div>' +
+                '</div></div>';
+        }).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initDashboard();
+        renderActivityLog();
+        // Log dashboard visit
+        ActivityLog.add('Dashboard viewed', '', 'general');
+    });
+</script>
+</body>
+</html>

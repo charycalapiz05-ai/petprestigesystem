@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Pet Prestige Admin</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/logo.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --admin-primary: #FF6B35;
+            --admin-bg: #f8f9fa;
+        }
+        .admin-body { background: var(--admin-bg); }
+        .admin-main { margin-left: 260px; padding: 24px; }
+        .admin-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 24px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+        .stat-card { display: flex; align-items: center; gap: 20px; padding: 28px; border-radius: 16px; background: white; box-shadow: 0 8px 30px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-4px); }
+        .stat-icon { width: 64px; height: 64px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; }
+        .stat-info h3 { font-size: 2rem; margin-bottom: 4px; }
+        .stat-info p { color: #95a5a6; font-size: 0.95rem; margin-bottom: 8px; }
+        .trend { font-size: 0.85rem; font-weight: 600; }
+        .admin-row { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .card-header h3 { font-size: 1.3rem; }
+        .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .admin-table th { padding: 16px 12px; text-align: left; color: #95a5a6; font-weight: 600; border-bottom: 2px solid #f0f0f0; }
+        .admin-table td { padding: 16px 12px; border-bottom: 1px solid #f5f5f5; }
+        .status-badge { padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .notification-bell { font-size: 1.4rem; cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.2s; }
+        .notification-bell:hover { background: rgba(255,255,255,0.1); }
+        #notifDropdown { position: absolute; right: 0; top: 50px; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); z-index: 100; }
+        .badge { background: var(--admin-primary); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; min-width: 24px; display: inline-flex; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body class="admin-body">
+    <div class="admin-wrapper">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <a href="dashboard.html" class="pet-prestige-logo" style="color:white;">
+                    <div class="logo-paw">
+                        <div class="logo-paw-crown"><span></span></div>
+                    </div>
+                    <div class="logo-text">
+                        <span class="logo-main" style="color: white;">Pet Prestige</span>
+                        <span class="logo-slogan" style="color: rgba(255,255,255,0.8);">Admin Panel</span>
+                    </div>
+                </a>
+            </div>
+            <nav class="admin-nav">
+                <a href="dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+                <a href="products.html"><i class="fas fa-box"></i><span>Products</span></a>
+                <a href="orders.html"><i class="fas fa-shopping-bag"></i><span>Orders</span><span class="badge" id="pendingOrdersBadge">0</span></a>
+                <a href="customers.html"><i class="fas fa-users"></i><span>Customers</span></a>
+                <a href="reviews.html"><i class="fas fa-star"></i><span>Reviews</span></a>
+                <a href="lost-found-admin.html"><i class="fas fa-search-location"></i><span>Lost & Found</span></a>
+                <a href="reports.html"><i class="fas fa-chart-line"></i><span>Reports</span></a>
+                <a href="settings.html"><i class="fas fa-cog"></i><span>Settings</span></a>
+            </nav>
+            <div class="admin-profile" onclick="toggleAdminMenu()" style="cursor:pointer;padding:20px;border-top:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:12px;">
+                <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--admin-primary),#e55a2b);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;">Admin</div>
+                <div><div style="font-weight:600;">Admin</div><div style="font-size:0.85rem;opacity:0.8;">admin@petprestige.ph</div></div>
+                <i class="fas fa-chevron-down" style="margin-left:auto;"></i>
+            </div>
+            <div id="adminMenu" style="display:none;">
+                <a href="#" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </aside>
+        <main class="admin-main">
+            <header class="admin-header">
+                <div>
+                    <h1>Dashboard Overview</h1>
+                    <p>Welcome back! Here's what's happening with your store today.</p>
+                </div>
+                <div class="admin-actions">
+                    <button class="btn btn-primary btn-sm" onclick="exportReport()">
+                        <i class="fas fa-download"></i> Export Report
+                    </button>
+                    <div class="notification-center">
+                        <button class="notification-bell" onclick="toggleNotifications()">
+                            <i class="far fa-bell"></i>
+                            <span class="badge" id="notificationBadge">3</span>
+                        </button>
+                        <div id="notificationDropdown" class="notification-dropdown">
+                            <!-- Notifications loaded by JS -->
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card revenue">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalRevenue">$12,450</h3>
+                        <p>Total Revenue</p>
+                        <span class="trend positive">+23% from last month</span>
+                    </div>
+                </div>
+                <div class="stat-card orders">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalOrders">247</h3>
+                        <p>Orders This Month</p>
+                        <span class="trend positive">+15% growth</span>
+                    </div>
+                </div>
+                <div class="stat-card customers">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="newCustomers">89</h3>
+                        <p>New Customers</p>
+                        <span class="trend positive">Great!</span>
+                    </div>
+                </div>
+                <div class="stat-card conversion">
+                    <div class="stat-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="conversionRate">3.2%</h3>
+                        <p>Conversion Rate</p>
+                        <span class="trend negative">-0.5%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="admin-row">
+                <div class="admin-card full-span">
+                    <div class="card-header">
+                        <h3>Sales Analytics - Last 30 Days</h3>
+                        <div class="chart-controls">
+                            <button class="btn btn-sm active">Daily</button>
+                            <button class="btn btn-sm">Weekly</button>
+                            <button class="btn btn-sm">Monthly</button>
+                        </div>
+                    </div>
+                    <canvas id="mainSalesChart" height="300"></canvas>
+                </div>
+            </div>
+
+            <!-- Order Status & Quick Actions -->
+            <div class="admin-row">
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3>Order Status Breakdown</h3>
+                    </div>
+                    <div class="status-grid">
+                        <div class="status-item pending">
+                            <div class="status-number">12</div>
+                            <div class="status-label">Pending Payment</div>
+                        </div>
+                        <div class="status-item processing">
+                            <div class="status-number">25</div>
+                            <div class="status-label">Processing</div>
+                        </div>
+                        <div class="status-item shipped">
+                            <div class="status-number">48</div>
+                            <div class="status-label">Shipped</div>
+                        </div>
+                        <div class="status-item delivered">
+                            <div class="status-number">156</div>
+                            <div class="status-label">Delivered</div>
+                        </div>
+                        <div class="status-item cancelled">
+                            <div class="status-number">6</div>
+                            <div class="status-label">Cancelled</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3>Quick Actions</h3>
+                    </div>
+                    <div class="quick-actions">
+                        <a href="products.html" class="quick-action">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Add New Product</span>
+                        </a>
+                        <a href="orders.html" class="quick-action">
+                            <i class="fas fa-truck"></i>
+                            <span>Process Orders</span>
+                        </a>
+                        <a href="customers.html" class="quick-action">
+                            <i class="fas fa-user-plus"></i>
+                            <span>View Customers</span>
+                        </a>
+                        <a href="reports.html" class="quick-action">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>View Reports</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="admin-card full-span">
+                <div class="card-header">
+                    <h3>Recent Activity</h3>
+                </div>
+                <div class="activity-feed">
+                    <!-- Activity items populated by JS -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+<script src="../js/api.js"></script>
+<script src="../js/script.js"></script>
+<script src="../js/api-bridge.js"></script> <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAdminAuth();
+            
+            // Load dashboard data
+            loadDashboardStats();
+            loadMainChart();
+            loadRecentActivity();
+            
+            // Setup notifications
+            setupNotifications();
+        });
+
+        function loadDashboardStats() {
+            // Mock data - replace with real data from script.js DB
+            document.getElementById('totalRevenue').textContent = '₱124,500';
+            document.getElementById('totalOrders').textContent = '247';
+            document.getElementById('newCustomers').textContent = '89';
+            document.getElementById('conversionRate').textContent = '3.2%';
+        }
+
+        function loadMainChart() {
+            const ctx = document.getElementById('mainSalesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan 1', 'Jan 8', 'Jan 15', 'Jan 22', 'Jan 29'],
+                    datasets: [{
+                        label: 'Sales',
+                        data: [12000, 19000, 15000, 24000, 32000],
+                        borderColor: '#FF6B35',
+                        backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function loadRecentActivity() {
+            const feed = document.querySelector('.activity-feed');
+            const activities = [
+                { type: 'order', user: 'Juan D.', action: 'placed order #PP-172345', time: '2 min ago', status: 'pending' },
+                { type: 'review', user: 'Maria S.', action: 'left 5⭐ review', time: '15 min ago', status: 'positive' },
+                { type: 'stock', user: 'System', action: 'Low stock alert - Dog Food', time: '1 hr ago', status: 'warning' },
+                { type: 'chat', user: 'Ana L.', action: 'sent chat message', time: '2 hrs ago', status: 'unread' }
+            ];
+            feed.innerHTML = activities.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-icon ${activity.status}">
+                        <i class="fas fa-${activity.type === 'order' ? 'shopping-cart' : activity.type === 'review' ? 'star' : activity.type === 'stock' ? 'exclamation-triangle' : 'comment'}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-text">
+                            <strong>${activity.user}</strong> ${activity.action}
+                        </div>
+                        <div class="activity-time">${activity.time}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setupNotifications() {
+            const badge = document.getElementById('notificationBadge');
+            badge.textContent = '3'; // Mock
+        }
+    </script>
+</body>
+</html>

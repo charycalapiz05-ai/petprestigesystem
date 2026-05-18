@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost &amp; Found - Pet Prestige</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-wrapper">
+                <a href="index.html" class="logo">
+                    <img src="images/logo-pet-prestige.png" alt="Pet Prestige" class="logo-img-main"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="logo-fallback" style="display:none; align-items:center; gap:10px;">
+                        <div class="logo-icon">🐾</div>
+                        <div class="logo-text">
+                            <span class="logo-main">Pet Prestige</span>
+                            <span class="logo-tagline">Premium Pet Care</span>
+                        </div>
+                    </div>
+                </a>
+                <div class="nav-actions">
+                    <a href="cart.html" class="nav-icon cart-icon" title="Cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </a>
+                    <a href="wishlist.html" class="nav-icon" title="Wishlist" style="color:var(--primary);">
+                        <i class="fas fa-heart"></i>
+                        <span class="cart-count wishlist-count" id="wishlistCount" style="background:#e74c3c;">0</span>
+                    </a>
+                    <a href="profile.html" class="nav-icon user-icon" title="Profile">
+                        <i class="fas fa-user"></i>
+                    </a>
+                </div>
+                <button class="mobile-menu-btn" onclick="toggleMobileMenu()" title="Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="nav-links" id="navLinks">
+                <a href="shop.html">🛒 Shop</a>
+                <a href="learn.html">📚 Learn</a>
+                <a href="lost-found.html" class="active">🔍 Find</a>
+                <a href="community.html">👥 Connect</a>
+                <a href="#" onclick="openSupportChat(); return false;">💬 Support</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="page-header lf-header">
+        <div class="container">
+            <h1>Lost &amp; Found Pets</h1>
+            <p>Help reunite pets with their loving families</p>
+            <div class="lf-stats-banner" id="lfStatsBanner"></div>
+            <div class="lf-actions" style="margin-top:16px;">
+                <button class="btn btn-primary" onclick="showReportModal('lost')">
+                    <i class="fas fa-search"></i> Report Lost Pet
+                </button>
+                <button class="btn btn-secondary" onclick="showReportModal('found')">
+                    <i class="fas fa-hand-holding-heart"></i> Report Found Pet
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section class="lf-section">
+        <div class="container">
+            <!-- Filter Row 1 -->
+            <div class="lf-filters">
+                <div class="lf-tabs">
+                    <button class="active" onclick="filterLF('all')">All</button>
+                    <button onclick="filterLF('lost')">🔴 Lost</button>
+                    <button onclick="filterLF('found')">🔵 Found</button>
+                    <button onclick="filterLF('reunited')" style="color:#27ae60;">🎉 Reunited</button>
+                </div>
+                <select id="lfSort" onchange="searchLF()"
+                    style="padding:8px 14px;border:1.5px solid #eee;border-radius:20px;font-family:inherit;font-size:0.85rem;outline:none;background:white;cursor:pointer;">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="city">By City</option>
+                </select>
+                <input type="text" id="lfSearch" placeholder="Search breed, location, name..."
+                    oninput="searchLF()"
+                    style="flex:1;min-width:200px;padding:9px 16px;border:1.5px solid #eee;border-radius:20px;font-family:inherit;font-size:0.88rem;outline:none;">
+            </div>
+            <!-- Filter Row 2: Species -->
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px;">
+                <span style="font-size:0.82rem;color:#888;font-weight:600;">Species:</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;" id="lfSpeciesBtns">
+                    <button class="lf-species-btn active" data-species="all"    onclick="filterSpecies('all')">All</button>
+                    <button class="lf-species-btn"        data-species="dog"    onclick="filterSpecies('dog')">🐕 Dogs</button>
+                    <button class="lf-species-btn"        data-species="cat"    onclick="filterSpecies('cat')">🐈 Cats</button>
+                    <button class="lf-species-btn"        data-species="bird"   onclick="filterSpecies('bird')">🐦 Birds</button>
+                    <button class="lf-species-btn"        data-species="rabbit" onclick="filterSpecies('rabbit')">🐰 Rabbits</button>
+                    <button class="lf-species-btn"        data-species="fish"   onclick="filterSpecies('fish')">🐟 Fish</button>
+                    <button class="lf-species-btn"        data-species="other"  onclick="filterSpecies('other')">🐾 Other</button>
+                </div>
+            </div>
+            <div class="lf-grid" id="lfGrid"></div>
+        </div>
+    </section>
+
+    <!-- Report Modal — BUG FIX: no inline style="display:none", CSS class handles it -->
+    <div class="modal" id="reportModal">
+        <div class="modal-content" style="max-width:640px;max-height:90vh;overflow-y:auto;">
+            <span class="close-modal" onclick="closeReportModal()">×</span>
+            <h2 id="modalTitle">Report Lost Pet</h2>
+            <div id="lfDuplicateWarn" style="display:none;background:#fff3cd;border:1.5px solid #ffc107;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:0.88rem;"></div>
+            <form id="reportForm">
+                <input type="hidden" id="reportType" value="lost">
+                <input type="hidden" id="editReportId" value="">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Pet Type *</label>
+                        <select id="petTypeSelect" required style="width:100%;padding:10px 14px;border:1.5px solid var(--gray-light);border-radius:8px;font-family:inherit;font-size:0.9rem;outline:none;">
+                            <option value="">Select...</option>
+                            <option value="dog">🐕 Dog</option>
+                            <option value="cat">🐈 Cat</option>
+                            <option value="bird">🐦 Bird</option>
+                            <option value="rabbit">🐰 Rabbit</option>
+                            <option value="fish">🐟 Fish</option>
+                            <option value="hamster">🐹 Hamster</option>
+                            <option value="other">🐾 Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Breed *</label>
+                        <input type="text" id="breed" required placeholder="e.g. Labrador, Siamese">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Pet Name (optional)</label>
+                        <input type="text" id="petName" placeholder="e.g. Max, Luna">
+                    </div>
+                    <div class="form-group">
+                        <label>Color / Markings</label>
+                        <input type="text" id="petColor" placeholder="e.g. Brown with white spots">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Location Last Seen / Found *</label>
+                    <input type="text" id="location" required placeholder="Barangay, City/Municipality">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date *</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:6px;">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.9rem;">
+                            <input type="checkbox" id="offerReward" style="width:16px;height:16px;accent-color:var(--primary);">
+                            💰 Offering a reward
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description *</label>
+                    <textarea id="description" rows="3" required
+                        placeholder="Color, size, distinctive marks, collar, microchip, last seen behavior..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Photos (up to 3 — more angles help identification)</label>
+                    <input type="file" id="petImageInput" accept="image/*" multiple>
+                    <div id="imagePreviewContainer" style="display:none;margin-top:10px;">
+                        <div id="imagePreviewStrip" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;"></div>
+                        <button type="button" onclick="clearReportImages()"
+                            style="margin-top:6px;background:none;border:none;color:#e74c3c;cursor:pointer;font-size:0.82rem;">
+                            <i class="fas fa-times"></i> Remove photos
+                        </button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Your Name *</label>
+                        <input type="text" id="contactName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone *</label>
+                        <input type="tel" id="contactPhone" required placeholder="09xxxxxxxxx">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email (optional — for comment notifications)</label>
+                        <input type="email" id="contactEmail" placeholder="you@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Facebook Messenger (optional)</label>
+                        <input type="url" id="contactMessenger" placeholder="https://m.me/your.name">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeReportModal()">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitReportBtn" onclick="submitLFReport()">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Photo Lightbox -->
+    <div class="modal" id="lfLightbox" onclick="document.getElementById('lfLightbox').classList.remove('active')">
+        <div style="position:relative;max-width:90vw;">
+            <img id="lfLightboxImg" style="max-width:90vw;max-height:85vh;object-fit:contain;border-radius:10px;display:block;">
+            <button onclick="event.stopPropagation();document.getElementById('lfLightbox').classList.remove('active')"
+                style="position:absolute;top:-12px;right:-12px;background:#333;color:white;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:0.9rem;line-height:1;">×</button>
+        </div>
+    </div>
+
+<script src="js/api.js"></script>
+<script src="js/script.js"></script>
+<script src="js/api-bridge.js"></script> <script>
+    // ── Global state ──────────────────────────────────────────────
+    window._lfActiveFilter  = 'all';
+    window._lfActiveSpecies = 'all';
+    window._lfReportImages  = [];
+
+    // ── Merge DB sample records so they are never lost ────────────
+    // When localStorage exists (after any user post), the || DB.lostFound
+    // fallback is skipped everywhere, wiping the 4 sample records.
+    // This runs BEFORE DOMContentLoaded to guarantee they are always present.
+    (function mergeSampleRecords() {
+        var stored = JSON.parse(localStorage.getItem('petPrestigeLF') || 'null');
+        if (!stored) {
+            // Nothing stored yet — seed with all DB records
+            localStorage.setItem('petPrestigeLF', JSON.stringify(DB.lostFound || []));
+        } else {
+            // Inject any missing DB sample record back (matched by id)
+            var changed = false;
+            (DB.lostFound || []).forEach(function(sample) {
+                if (!stored.some(function(r) { return r.id === sample.id; })) {
+                    stored.push(sample);
+                    changed = true;
+                }
+            });
+            if (changed) localStorage.setItem('petPrestigeLF', JSON.stringify(stored));
+        }
+    })();
+
+    // ── Init ──────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCartCount();
+        updateWishlistCount();
+        autoArchiveOldReports();
+        renderLFStats();
+        loadLostFound('all');
+
+        document.getElementById('petImageInput').addEventListener('change', function() {
+            previewMultiplePhotos(this);
+        });
+        ['breed', 'location'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) el.addEventListener('blur', checkDuplicateReport);
+        });
+    });
+
+    // ── Stats banner ──────────────────────────────────────────────
+    function renderLFStats() {
+        var data   = JSON.parse(localStorage.getItem('petPrestigeLF') || JSON.stringify(DB.lostFound || []));
+        var lost   = data.filter(function(i){ return i.type === 'lost'  && i.status === 'active'; }).length;
+        var found  = data.filter(function(i){ return i.type === 'found' && i.status === 'active'; }).length;
+        var united = data.filter(function(i){ return i.status === 'reunited'; }).length;
+        var el = document.getElementById('lfStatsBanner');
+        if (!el) return;
+        el.innerHTML =
+            '<span style="display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:30px;background:#fdecea;color:#c0392b;font-size:0.85rem;font-weight:700;">' +
+            '<i class="fas fa-search"></i> ' + lost + ' Lost</span>' +
+            '<span style="display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:30px;background:#d6eaf8;color:#1a5276;font-size:0.85rem;font-weight:700;">' +
+            '<i class="fas fa-hand-holding-heart"></i> ' + found + ' Found</span>' +
+            '<span style="display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:30px;background:#d5f5e3;color:#1e8449;font-size:0.85rem;font-weight:700;">' +
+            '<i class="fas fa-heart"></i> ' + united + ' Reunited</span>';
+    }
+
+    // ── Species filter ────────────────────────────────────────────
+    function filterSpecies(species) {
+        window._lfActiveSpecies = species;
+        document.querySelectorAll('.lf-species-btn').forEach(function(btn) {
+            btn.classList.toggle('active', btn.dataset.species === species);
+        });
+        loadLostFound(window._lfActiveFilter || 'all');
+    }
+
+    // ── Full loadLostFound override with species + sort ───────────
+    loadLostFound = function(filter) {
+        filter = filter || 'all';
+        window._lfActiveFilter = filter;
+        var grid = document.getElementById('lfGrid');
+        if (!grid) return;
+
+        var data    = JSON.parse(localStorage.getItem('petPrestigeLF') || JSON.stringify(DB.lostFound || []));
+        var search  = (document.getElementById('lfSearch')  ? document.getElementById('lfSearch').value  : '').toLowerCase().trim();
+        var sort    = (document.getElementById('lfSort')    ? document.getElementById('lfSort').value    : 'newest');
+        var species = window._lfActiveSpecies || 'all';
+
+        var items;
+        if (filter === 'reunited') {
+            items = data.filter(function(i){ return i.status === 'reunited'; });
+        } else if (filter === 'all') {
+            items = data.filter(function(i){ return i.status !== 'reunited' && i.status !== 'archived'; });
+        } else {
+            items = data.filter(function(i){ return i.type === filter && i.status !== 'reunited' && i.status !== 'archived'; });
+        }
+
+        if (species !== 'all') {
+            items = items.filter(function(i){ return (i.petType || '').toLowerCase() === species; });
+        }
+        if (search) {
+            items = items.filter(function(i){
+                return (i.breed||'').toLowerCase().includes(search) ||
+                       (i.location||'').toLowerCase().includes(search) ||
+                       (i.name||'').toLowerCase().includes(search) ||
+                       (i.description||'').toLowerCase().includes(search);
+            });
+        }
+        if (sort === 'newest')      { items.sort(function(a,b){ return b.id - a.id; }); }
+        else if (sort === 'oldest') { items.sort(function(a,b){ return a.id - b.id; }); }
+        else if (sort === 'city')   { items.sort(function(a,b){ return (a.location||'').localeCompare(b.location||''); }); }
+
+        grid.innerHTML = items.length
+            ? items.map(createLFCard).join('')
+            : '<p style="text-align:center;padding:60px;color:#aaa;">No reports found.</p>';
+    };
+
+    // ── searchLF / filterLF overrides ─────────────────────────────
+    searchLF = function() { loadLostFound(window._lfActiveFilter || 'all'); };
+    filterLF = function(type) {
+        window._lfActiveFilter = type;
+        document.querySelectorAll('.lf-tabs button').forEach(function(btn) {
+            var oc = btn.getAttribute('onclick') || '';
+            btn.classList.toggle('active', oc.includes("'" + type + "'"));
+        });
+        loadLostFound(type);
+    };
+
+    // ── Modal open/close ──────────────────────────────────────────
+    showReportModal = function(type) {
+        if (!requireLogin('Please log in to report a pet.')) return;
+        document.getElementById('reportForm').reset();
+        document.getElementById('editReportId').value = '';
+        document.getElementById('imagePreviewContainer').style.display = 'none';
+        document.getElementById('imagePreviewStrip').innerHTML = '';
+        document.getElementById('lfDuplicateWarn').style.display = 'none';
+        window._lfReportImages = [];
+        document.getElementById('reportType').value = type || 'lost';
+        document.getElementById('modalTitle').textContent = type === 'found' ? 'Report Found Pet' : 'Report Lost Pet';
+        document.getElementById('submitReportBtn').textContent = 'Submit Report';
+        var user = getCurrentUser();
+        if (user) {
+            if (document.getElementById('contactName')) document.getElementById('contactName').value = user.name || '';
+            if (document.getElementById('contactEmail')) document.getElementById('contactEmail').value = user.email || '';
+        }
+        document.getElementById('reportModal').classList.add('active');
+    };
+    closeReportModal = function() {
+        document.getElementById('reportModal').classList.remove('active');
+    };
+
+    // ── Multi-photo preview ───────────────────────────────────────
+    function previewMultiplePhotos(input) {
+        var files = Array.from(input.files).slice(0, 3);
+        if (!files.length) return;
+        window._lfReportImages = [];
+        var strip = document.getElementById('imagePreviewStrip');
+        strip.innerHTML = '';
+        document.getElementById('imagePreviewContainer').style.display = 'block';
+        files.forEach(function(file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                window._lfReportImages.push(e.target.result);
+                var img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.cssText = 'width:80px;height:70px;object-fit:cover;border-radius:8px;cursor:pointer;flex-shrink:0;';
+                img.onclick = function(){ openLightbox(e.target.result); };
+                strip.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+    function clearReportImages() {
+        window._lfReportImages = [];
+        document.getElementById('petImageInput').value = '';
+        document.getElementById('imagePreviewStrip').innerHTML = '';
+        document.getElementById('imagePreviewContainer').style.display = 'none';
+    }
+    function openLightbox(src) {
+        document.getElementById('lfLightboxImg').src = src;
+        document.getElementById('lfLightbox').classList.add('active');
+    }
+
+    // ── Duplicate check ───────────────────────────────────────────
+    function checkDuplicateReport() {
+        var breed    = (document.getElementById('breed')   ? document.getElementById('breed').value    : '').toLowerCase().trim();
+        var location = (document.getElementById('location') ? document.getElementById('location').value : '').toLowerCase().trim();
+        var type     = document.getElementById('reportType') ? document.getElementById('reportType').value : 'lost';
+        if (!breed || !location) return;
+        var data = JSON.parse(localStorage.getItem('petPrestigeLF') || JSON.stringify(DB.lostFound || []));
+        var sevenDaysAgo = Date.now() - 7 * 86400000;
+        var similar = data.filter(function(i) {
+            return i.status === 'active' &&
+                   i.type !== type &&
+                   (i.breed || '').toLowerCase().includes(breed.split(' ')[0]) &&
+                   (i.location || '').toLowerCase().includes(location.split(',')[0]) &&
+                   i.id > sevenDaysAgo;
+        });
+        var warn = document.getElementById('lfDuplicateWarn');
+        if (!warn) return;
+        if (similar.length > 0) {
+            var opposite = type === 'lost' ? 'found' : 'lost';
+            warn.style.display = 'block';
+            warn.innerHTML = '&#9888; <strong>Possible match found!</strong> A ' + opposite +
+                ' report for a similar pet in this area was posted recently. ' +
+                '<a href="#" onclick="closeReportModal();filterLF(\'' + opposite + '\');return false;" ' +
+                'style="color:#856404;font-weight:700;">Check it first &rarr;</a>';
+        } else {
+            warn.style.display = 'none';
+        }
+    }
+
+    // ── Submit / Edit report (BUG FIX: was addReport) ────────────
+    function submitLFReport() {
+        if (!requireLogin('Please log in to submit a report.')) return;
+
+        var breed    = document.getElementById('breed')   ? document.getElementById('breed').value.trim()    : '';
+        var location = document.getElementById('location') ? document.getElementById('location').value.trim() : '';
+        var date     = document.getElementById('date')     ? document.getElementById('date').value            : '';
+        var desc     = document.getElementById('description') ? document.getElementById('description').value.trim() : '';
+        var phone    = document.getElementById('contactPhone') ? document.getElementById('contactPhone').value.trim() : '';
+        var cname    = document.getElementById('contactName')  ? document.getElementById('contactName').value.trim()  : '';
+
+        if (!breed)    { showToast('Please enter the breed.', 'error'); return; }
+        if (!location) { showToast('Please enter the location.', 'error'); return; }
+        if (!date)     { showToast('Please enter the date.', 'error'); return; }
+        if (!desc)     { showToast('Please enter a description.', 'error'); return; }
+        if (!phone)    { showToast('Please enter your phone number.', 'error'); return; }
+        if (!cname)    { showToast('Please enter your name.', 'error'); return; }
+
+        var editId = document.getElementById('editReportId') ? document.getElementById('editReportId').value : '';
+        var data   = JSON.parse(localStorage.getItem('petPrestigeLF') || JSON.stringify(DB.lostFound || []));
+        var images = window._lfReportImages || [];
+        var mainImage = images[0] || 'https://via.placeholder.com/400x200/FF6B35/fff?text=Pet+Photo';
+        var petTypeVal = document.getElementById('petTypeSelect') ? document.getElementById('petTypeSelect').value : 'other';
+        var contactEmail    = document.getElementById('contactEmail')    ? document.getElementById('contactEmail').value.trim()    : '';
+        var contactMessenger = document.getElementById('contactMessenger') ? document.getElementById('contactMessenger').value.trim() : '';
+        var reward = document.getElementById('offerReward') ? document.getElementById('offerReward').checked : false;
+        var color  = document.getElementById('petColor') ? document.getElementById('petColor').value.trim() : '';
+
+        if (editId) {
+            var idx = data.findIndex(function(i){ return String(i.id) === String(editId); });
+            if (idx >= 0) {
+                data[idx].petType          = petTypeVal;
+                data[idx].name             = document.getElementById('petName') ? (document.getElementById('petName').value.trim() || 'Unknown') : 'Unknown';
+                data[idx].breed            = breed;
+                data[idx].color            = color;
+                data[idx].location         = location;
+                data[idx].date             = date;
+                data[idx].description      = desc;
+                data[idx].contactName      = cname;
+                data[idx].contactPhone     = phone;
+                data[idx].contactEmail     = contactEmail;
+                data[idx].contactMessenger = contactMessenger;
+                data[idx].reward           = reward;
+                if (images.length) {
+                    data[idx].images = images;
+                    data[idx].image  = images[0];
+                }
+                data[idx].updatedAt = new Date().toISOString();
+                showToast('Report updated! ✓');
+            }
+        } else {
+            var petNameVal = document.getElementById('petName') ? document.getElementById('petName').value.trim() : '';
+            var newItem = {
+                id:               Date.now(),
+                type:             document.getElementById('reportType') ? document.getElementById('reportType').value : 'lost',
+                petType:          petTypeVal,
+                name:             petNameVal || 'Unknown',
+                breed:            breed,
+                color:            color,
+                size:             'medium',
+                location:         location,
+                date:             date,
+                contactName:      cname,
+                contactPhone:     phone,
+                contactEmail:     contactEmail,
+                contactMessenger: contactMessenger,
+                reward:           reward,
+                description:      desc,
+                image:            mainImage,
+                images:           images.length ? images : [mainImage],
+                status:           'active',
+                verified:         false,
+                comments:         []
+            };
+            data.unshift(newItem);
+            showToast('Report submitted! 🐾');
+
+            // Email notification to reporter on new comments (save email for later)
+        }
+
+        localStorage.setItem('petPrestigeLF', JSON.stringify(data));
+        lfData = data;
+        closeReportModal();
+        document.getElementById('reportForm').reset();
+        window._lfReportImages = [];
+        renderLFStats();
+        loadLostFound(window._lfActiveFilter || 'all');
+    }
+
+    // ── Edit own report ───────────────────────────────────────────
+    function editLFReport(id) {
+        if (!requireLogin('Please log in to edit this report.')) return;
+        var data = JSON.parse(localStorage.getItem('petPrestigeLF') || JSON.stringify(DB.lostFound || []));
+        var item = data.find(function(i){ return i.id === id; });
+        if (!item) return;
+        document.getElementById('reportForm').reset();
+        window._lfReportImages = item.images || [];
+        document.getElementById('editReportId').value    = id;
+        document.getElementById('reportType').value      = item.type || 'lost';
+        document.getElementById('petTypeSelect').value   = item.petType || '';
+        document.getElementById('breed').value           = item.breed || '';
+        document.getElementById('petName').value         = item.name !== 'Unknown' ? (item.name || '') : '';
+        document.getElementById('petColor').value        = item.color || '';
+        document.getElementById('location').value        = item.location || '';
+        document.getElementById('date').value            = item.date || '';
+        document.getElementById('description').value     = item.description || '';
+        document.getElementById('contactName').value     = item.contactName || '';
+        document.getElementById('contactPhone').value    = item.contactPhone || '';
+        document.getElementById('contactEmail').value    = item.contactEmail || '';
+        document.getElementById('contactMessenger').value = item.contactMessenger || '';
+        document.getElementById('offerReward').checked  = item.reward || false;
+        var existingPhotos = item.images || (item.image ? [item.image] : []);
+        if (existingPhotos.length) {
+            var strip = document.getElementById('imagePreviewStrip');
+            strip.innerHTML = '';
+            existingPhotos.forEach(function(src) {
+                var img = document.createElement('img');
+                img.src = src;
+                img.style.cssText = 'width:80px;height:70px;object-fit:cover;border-radius:8px;cursor:pointer;flex-shrink:0;';
+                img.onclick = function(){ openLightbox(src); };
+                strip.appendChild(img);
+            });
+            document.getElementById('imagePreviewContainer').style.display = 'block';
+        }
+        document.getElementById('modalTitle').textContent = 'Edit Report';
+        document.getElementById('submitReportBtn').textContent = 'Save Changes';
+        document.getElementById('lfDuplicateWarn').style.display = 'none';
+        document.getElementById('reportModal').classList.add('active');
+    }
+
+    // ── Share ─────────────────────────────────────────────────────
+    function shareLFReport(id) {
+        var url  = window.location.origin + window.location.pathname + '?report=' + id;
+        var data = JSON.parse(localStorage.getItem('petPrestigeLF') || JSON.stringify(DB.lostFound || []));
+        var item = data.find(function(i){ return i.id === id; });
+        var text = item
+            ? (item.type === 'lost' ? '🚨 LOST PET: ' : '💙 FOUND PET: ') +
+              item.breed + (item.name && item.name !== 'Unknown' ? ' named ' + item.name : '') +
+              ' at ' + item.location + '. Contact: ' + item.contactPhone +
+              ' | Please help share!'
+            : 'Lost & Found Pet — Pet Prestige Philippines';
+        if (navigator.share) {
+            navigator.share({ title: 'Pet Prestige Lost & Found', text: text, url: url }).catch(function(){});
+        } else {
+            var copied = false;
+            try {
+                navigator.clipboard.writeText(url).then(function(){
+                    showToast('Link copied! Share it to help find this pet. 🐾');
+                    copied = true;
+                });
+            } catch(e) {}
+            if (!copied) {
+                window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url), '_blank');
+            }
+        }
+    }
+
+    // ── Print poster ──────────────────────────────────────────────
+    function printLFPoster(id) {
+        var data = JSON.parse(localStorage.getItem('petPrestigeLF') || JSON.stringify(DB.lostFound || []));
+        var item = data.find(function(i){ return i.id === id; });
+        if (!item) return;
+        var typeColor  = item.type === 'lost' ? '#e74c3c' : '#2980b9';
+        var typeLabel  = item.type === 'lost' ? 'LOST' : 'FOUND';
+        var rewardLine = item.reward ? '<p style="color:#856404;font-weight:700;font-size:1.1rem;margin-top:8px;">💰 REWARD OFFERED</p>' : '';
+        var win = window.open('', '_blank', 'width=700,height=950');
+        win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+            '<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">' +
+            '<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Poppins,sans-serif;padding:40px;background:white;}' +
+            '.poster{max-width:580px;margin:0 auto;text-align:center;border:4px solid ' + typeColor + ';border-radius:16px;padding:32px;}' +
+            '.type-label{font-size:3.5rem;font-weight:800;color:' + typeColor + ';letter-spacing:4px;margin-bottom:8px;}' +
+            '.pet-photo{width:260px;height:260px;object-fit:cover;border-radius:12px;margin:16px auto;display:block;border:3px solid #eee;}' +
+            '.pet-name{font-size:2rem;font-weight:700;margin-bottom:4px;}' +
+            '.detail{font-size:1rem;color:#444;margin:5px 0;}.desc{font-size:0.9rem;color:#555;margin:10px 0;line-height:1.6;}' +
+            '.contact-box{background:#f8f9fa;border-radius:10px;padding:16px;margin-top:20px;}' +
+            '.contact-box h3{font-size:0.9rem;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}' +
+            '.phone{font-size:2rem;font-weight:800;color:' + typeColor + ';}' +
+            '.brand{margin-top:18px;font-size:0.72rem;color:#bbb;}' +
+            '@media print{@page{size:A4;margin:15mm}}</style></head><body>' +
+            '<div class="poster">' +
+            '<div class="type-label">' + typeLabel + ' PET</div>' +
+            '<img src="' + item.image + '" class="pet-photo" onerror="this.src=\'https://via.placeholder.com/260?text=Pet\'">' +
+            '<div class="pet-name">' + (item.name && item.name !== 'Unknown' ? item.name + ' — ' + item.breed : item.breed) + '</div>' +
+            (item.color ? '<p class="detail">Color: ' + item.color + '</p>' : '') +
+            '<p class="detail">📍 ' + item.location + '</p>' +
+            '<p class="detail">📅 ' + item.date + '</p>' +
+            '<p class="desc">' + item.description + '</p>' +
+            rewardLine +
+            '<div class="contact-box"><h3>If you have information, please contact:</h3>' +
+            '<div class="phone">' + item.contactPhone + '</div>' +
+            '<div style="color:#555;margin-top:6px;font-weight:600;">' + item.contactName + '</div>' +
+            (item.contactEmail ? '<div style="color:#777;font-size:0.88rem;">' + item.contactEmail + '</div>' : '') +
+            '</div><div class="brand">Posted on Pet Prestige Lost &amp; Found — petprestige.ph</div>' +
+            '</div></body></html>');
+        win.document.close();
+        win.focus();
+        setTimeout(function(){ win.print(); }, 700);
+    }
+
+    // ── Auto-archive (60 days) ────────────────────────────────────
+    function autoArchiveOldReports() {
+        // TIMESTAMP_MIN: any real Date.now() id is > 1 trillion.
+        // DB sample records have id 1-4 — never archive those.
+        var TIMESTAMP_MIN = 1000000000000;
+        var data = JSON.parse(localStorage.getItem('petPrestigeLF') || JSON.stringify(DB.lostFound || []));
+        var sixtyDaysAgo = Date.now() - 60 * 86400000;
+        var changed = false;
+        data.forEach(function(item) {
+            if (item.status === 'active' &&
+                item.id >= TIMESTAMP_MIN &&
+                item.id < sixtyDaysAgo) {
+                item.status = 'archived';
+                changed = true;
+            }
+        });
+        if (changed) {
+            localStorage.setItem('petPrestigeLF', JSON.stringify(data));
+            lfData = data;
+        }
+    }
+
+    // ── createLFCard override — all new features ──────────────────
+    createLFCard = function(item) {
+        var user       = getCurrentUser();
+        var isOwner    = user && (user.name === item.contactName || user.email === ADMIN_EMAIL || user.email === item.contactEmail);
+        var isReunited = item.status === 'reunited';
+        var isArchived = item.status === 'archived';
+        var speciesMap = { dog:'🐕', cat:'🐈', bird:'🐦', rabbit:'🐰', fish:'🐟', hamster:'🐹', other:'🐾' };
+        var emoji      = speciesMap[item.petType] || '🐾';
+
+        // Extra photos
+        var photos = item.images || (item.image ? [item.image] : []);
+        var extraPhotos = '';
+        if (photos.length > 1) {
+            extraPhotos = '<div style="display:flex;gap:6px;overflow-x:auto;margin-top:8px;padding-bottom:2px;">' +
+                photos.slice(1).map(function(src) {
+                    return '<img src="' + src + '" style="width:70px;height:60px;object-fit:cover;border-radius:8px;cursor:pointer;flex-shrink:0;" ' +
+                        'onclick="openLightbox(this.src)" onerror="this.style.display=\'none\'">';
+                }).join('') + '</div>';
+        }
+
+        // Badges row
+        var badgesHtml = '';
+        if (item.reward)   badgesHtml += '<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;background:#fef3cd;color:#856404;border-radius:12px;font-size:0.75rem;font-weight:700;margin-right:4px;">💰 Reward</span>';
+        if (item.verified) badgesHtml += '<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;background:#d5f5e3;color:#1e8449;border-radius:12px;font-size:0.75rem;font-weight:700;margin-right:4px;">✓ Verified</span>';
+        if (isArchived)    badgesHtml += '<span style="padding:3px 10px;background:#f0f0f0;color:#aaa;border-radius:12px;font-size:0.75rem;font-weight:600;">Archived</span>';
+        if (badgesHtml) badgesHtml = '<div style="margin-bottom:8px;">' + badgesHtml + '</div>';
+
+        // Action buttons
+        var btnStyle = 'flex:1;min-width:0;padding:8px 8px;border:1.5px solid #eee;background:#f8f9fa;border-radius:8px;cursor:pointer;font-size:0.78rem;font-family:inherit;color:#555;text-align:center;text-decoration:none;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:4px;';
+        var actionsHtml =
+            '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:10px;">' +
+            '<button style="' + btnStyle + '" onclick="shareLFReport(' + item.id + ')"><i class="fas fa-share-alt"></i> Share</button>' +
+            '<button style="' + btnStyle + '" onclick="printLFPoster(' + item.id + ')"><i class="fas fa-print"></i> Poster</button>';
+        if (item.contactPhone) {
+            actionsHtml += '<a href="tel:' + item.contactPhone + '" style="' + btnStyle + '"><i class="fas fa-phone"></i> Call</a>';
+        }
+        if (item.contactMessenger) {
+            actionsHtml += '<a href="' + item.contactMessenger + '" target="_blank" style="' + btnStyle + ';color:#0866ff;border-color:#b3c7f7;"><i class="fab fa-facebook-messenger"></i></a>';
+        }
+        if (isOwner && !isReunited && !isArchived) {
+            actionsHtml += '<button style="' + btnStyle + 'background:#27ae60;color:white;border-color:#27ae60;" onclick="markReunited(' + item.id + ')"><i class="fas fa-heart"></i> Reunited!</button>';
+            actionsHtml += '<button style="' + btnStyle + 'background:#d6eaf8;color:#1a5276;border-color:#aed6f1;" onclick="editLFReport(' + item.id + ')"><i class="fas fa-edit"></i> Edit</button>';
+        }
+        actionsHtml += '</div>';
+
+        // Comments
+        var commentsHtml =
+            '<button onclick="toggleLFComments(' + item.id + ')" ' +
+            'style="width:100%;padding:9px;background:#f8f9fa;border:1.5px solid #eee;border-radius:8px;cursor:pointer;font-size:0.85rem;font-family:inherit;margin-top:8px;">' +
+            '<i class="fas fa-comments"></i> Comments (<span id="lfCommentCount_' + item.id + '">' + (item.comments||[]).length + '</span>)</button>' +
+            '<div id="lfComments_' + item.id + '" style="display:none;margin-top:12px;border-top:1px solid #eee;padding-top:12px;">' +
+            '<div id="lfCommentList_' + item.id + '">' +
+            ((item.comments||[]).map(function(c){
+                return '<div style="background:#f8f8f8;border-radius:8px;padding:10px;margin-bottom:8px;font-size:0.88rem;">' +
+                    '<strong>' + c.author + '</strong> <span style="color:#aaa;font-size:0.78rem;">' + c.time + '</span>' +
+                    '<p style="margin:4px 0 0;">' + c.text + '</p></div>';
+            }).join('') || '<p style="color:#aaa;font-size:0.85rem;text-align:center;">No comments yet.</p>') +
+            '</div>' +
+            '<div style="display:flex;gap:8px;margin-top:10px;">' +
+            '<input type="text" id="lfCommentInput_' + item.id + '" placeholder="Write a comment..." ' +
+            'style="flex:1;padding:8px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:0.88rem;font-family:inherit;outline:none;" ' +
+            'onkeypress="if(event.key===\'Enter\')addLFComment(' + item.id + ')">' +
+            '<button class="btn btn-primary" style="padding:8px 14px;font-size:0.85rem;" onclick="addLFComment(' + item.id + ')">Post</button>' +
+            '</div></div>';
+
+        var archivedNotice = isArchived
+            ? '<div style="text-align:center;padding:6px 14px;background:#f8f9fa;border-radius:8px;font-size:0.8rem;color:#aaa;margin-top:8px;"><i class="fas fa-clock"></i> This report is over 60 days old and has been archived.</div>'
+            : '';
+
+        return '<div class="lf-card" id="lfCard_' + item.id + '" style="' + (isReunited||isArchived ? 'opacity:0.75;' : '') + '">' +
+            '<div style="position:relative;">' +
+            '<img src="' + item.image + '" alt="' + item.breed + '" class="lf-image" ' +
+            'style="width:100%;height:200px;object-fit:cover;border-radius:10px 10px 0 0;cursor:pointer;" ' +
+            'onclick="openLightbox(this.src)" ' +
+            'onerror="this.src=\'https://via.placeholder.com/400x200/FF6B35/fff?text=Pet+Photo\'">' +
+            '<span class="lf-badge ' + item.type + '" style="position:absolute;top:10px;left:10px;">' + emoji + ' ' + item.type.toUpperCase() + '</span>' +
+            (isReunited ? '<div style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(39,174,96,0.15);border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:center;">' +
+                '<span style="background:#27ae60;color:white;padding:8px 20px;border-radius:20px;font-weight:700;font-size:1rem;">🎉 REUNITED!</span></div>' : '') +
+            '</div>' +
+            '<div class="lf-info" style="padding:16px;">' +
+            badgesHtml +
+            '<h3>' + item.breed + (item.name && item.name !== 'Unknown' ? ' — ' + item.name : '') + '</h3>' +
+            (item.color ? '<p style="color:#888;font-size:0.82rem;margin:2px 0 6px;">' + item.color + '</p>' : '') +
+            '<div class="lf-meta"><span><i class="fas fa-map-marker-alt"></i> ' + item.location + '</span><span><i class="fas fa-calendar"></i> ' + item.date + '</span></div>' +
+            '<p style="color:#666;font-size:0.9rem;margin:10px 0;">' + item.description + '</p>' +
+            '<div style="background:#fef7f0;border-radius:8px;padding:10px;margin-bottom:6px;">' +
+            '<p style="font-weight:600;color:var(--primary);margin:0 0 4px;font-size:0.88rem;">Contact:</p>' +
+            '<p style="font-size:0.88rem;margin:0;"><i class="fas fa-user"></i> ' + item.contactName +
+            ' &nbsp;<i class="fas fa-phone"></i> ' + item.contactPhone +
+            (item.contactEmail ? ' &nbsp;<i class="fas fa-envelope"></i> ' + item.contactEmail : '') + '</p></div>' +
+            extraPhotos + archivedNotice + actionsHtml + commentsHtml +
+            '</div></div>';
+    };
+    </script>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <img src="images/logo-pet-prestige.png" alt="Pet Prestige" style="height:60px;margin-bottom:15px;"
+                         onerror="this.outerHTML='<div style=\'font-size:2rem;margin-bottom:15px;\'>🐾</div>'">
+                    <p>Philippines&#39; trusted destination for premium pet care since 2025.</p>
+                    <div class="social-links" style="margin-top:20px;">
+                        <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" title="YouTube"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="shop.html?category=dogs">Dogs</a></li>
+                        <li><a href="shop.html?category=cats">Cats</a></li>
+                        <li><a href="shop.html?category=birds">Birds</a></li>
+                        <li><a href="shop.html?category=fish">Fish</a></li>
+                        <li><a href="shop.html?category=small-pets">Small Pets</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="learn.html">Pet Care Guides</a></li>
+                        <li><a href="lost-found.html">Lost &amp; Found</a></li>
+                        <li><a href="community.html">Community Forum</a></li>
+                        <li><a href="terms.html">Terms &amp; Conditions</a></li>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>Get in Touch</h4>
+                    <p><i class="fas fa-phone"></i> +63 912 345 6789</p>
+                    <p><i class="fas fa-envelope"></i> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="533b363f3f3c1323362723213620273a34367d233b">[email&#160;protected]</a></p>
+                    <p><i class="fas fa-map-marker-alt"></i> Sapang Dalaga, Misamis Occidental</p>
+                    <p style="margin-top:15px;font-size:0.85rem;opacity:0.7;"><i class="fas fa-clock"></i> Mon&#8211;Sat, 8AM&#8211;6PM PHT</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&#169; 2026 Pet Prestige. All rights reserved.</p>
+                <p style="margin-top:5px;">Made with 🐾 in the Philippines</p>
+            </div>
+        </div>
+    </footer>
+
+    <div class="chat-widget" id="chatWidget" style="display:none;">
+        <div class="chat-header">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="position:relative;">
+                    <div style="width:36px;height:36px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🐾</div>
+                    <div style="position:absolute;bottom:0;right:0;width:10px;height:10px;background:#2ecc71;border-radius:50%;border:2px solid var(--primary);"></div>
+                </div>
+                <div>
+                    <h4 style="margin:0;font-size:0.95rem;">Pet Prestige AI Support</h4>
+                    <span style="font-size:0.72rem;opacity:0.85;">🟢 Online — Powered by Claude AI</span>
+                </div>
+            </div>
+            <button onclick="closeSupportChat()" style="background:none;border:none;color:white;cursor:pointer;font-size:1.1rem;padding:4px;"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="chat-message bot"><p>Hi there! 👋 I'm Pet Prestige's AI assistant. How can I help you today? 🐾</p></div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Ask me anything about pets..." onkeypress="handleChatKeyPress(event)" autocomplete="off">
+            <button onclick="sendChatMessage()" title="Send"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+    <button class="chat-toggle" onclick="openSupportChat()" id="chatToggle" title="AI Support Chat">
+        <i class="fas fa-comments"></i>
+    </button>
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Pet Prestige</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .profile-pic-wrapper {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 16px;
+        }
+        .profile-pic {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .profile-pic-icon {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4.5rem;
+        }
+        .avatar-upload-btn {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+        .avatar-upload-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.1);
+        }
+        #avatarInput {
+            display: none;
+        }
+        .avatar-remove {
+            margin-top: 12px;
+            color: #e74c3c;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        /* Rest of your existing tab styles... */
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-wrapper">
+                <a href="index.html" class="logo">
+                    <img src="images/logo-pet-prestige.png" alt="Pet Prestige" class="logo-img-main"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="logo-fallback" style="display:none; align-items:center; gap:10px;">
+                        <div class="logo-icon">&#128062;</div>
+                        <div class="logo-text">
+                            <span class="logo-main">Pet Prestige</span>
+                            <span class="logo-tagline">Premium Pet Care</span>
+                        </div>
+                    </div>
+                </a>
+                <div class="nav-actions">
+                    <a href="cart.html" class="nav-icon cart-icon" title="Cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </a>
+                    <a href="wishlist.html" class="nav-icon" title="Wishlist" style="color:var(--primary);">
+                        <i class="fas fa-heart"></i>
+                        <span class="cart-count wishlist-count" id="wishlistCount" style="background:#e74c3c;">0</span>
+                    </a>
+                    <a href="profile.html" class="nav-icon user-icon" title="Profile">
+                        <img id="navAvatar" src="" alt="User" style="display:none; width:32px; height:32px; border-radius:50%; object-fit:cover;">
+                        <i class="fas fa-user" id="navAvatarFallback"></i>
+                    </a>
+                </div>
+                <button class="mobile-menu-btn" onclick="toggleMobileMenu()" title="Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="nav-links" id="navLinks">
+                <a href="shop.html">&#128722; Shop</a>
+                <a href="learn.html">&#128218; Learn</a>
+                <a href="lost-found.html">&#128269; Find</a>
+                <a href="community.html">&#128101; Connect</a>
+                <a href="#" onclick="openSupportChat(); return false;">&#128172; Support</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="profile-section">
+        <div class="container">
+            <h1>My Account</h1>
+
+            <div class="profile-layout">
+                <aside class="profile-sidebar">
+                    <div class="profile-info-card text-center">
+                        <div class="profile-pic-wrapper">
+                            <img id="profileAvatar" class="profile-pic" src="" alt="Profile" style="display:none;">
+                            <div class="profile-pic-icon" id="profileAvatarFallback">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <label class="avatar-upload-btn" for="avatarInput">
+                                <i class="fas fa-camera"></i>
+                            </label>
+                            <input type="file" id="avatarInput" accept="image/*">
+                        </div>
+
+                        <h2 id="profileName">Guest User</h2>
+                        <p id="profileEmail">Not logged in</p>
+
+                        <button id="removeAvatarBtn" class="avatar-remove" style="display:none;" onclick="removeAvatar()">
+                            Remove photo
+                        </button>
+
+                        <button class="btn btn-outline btn-sm mt-3" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+
+                    <div class="profile-tabs">
+                        <button class="profile-tab-btn active" data-tab="overview">Overview</button>
+                        <button class="profile-tab-btn" data-tab="orders">Orders</button>
+                        <button class="profile-tab-btn" data-tab="addresses">Addresses</button>
+                        <button class="profile-tab-btn" data-tab="myreviews">My Reviews</button>
+                        <button class="profile-tab-btn" data-tab="wishlist">Wishlist</button>
+                        <button class="profile-tab-btn" data-tab="petprofiles">🐾 My Pets</button>
+                        <button class="profile-tab-btn" data-tab="loyalty">🏆 Points</button>
+                        <button class="profile-tab-btn" data-tab="settings">Settings</button>
+                    </div>
+                </aside>
+
+                <main class="profile-main">
+                    <div id="overview" class="profile-tab-content active">
+                        <!-- Rendered by script.js renderProfileOverview() -->
+                    </div>
+                    <div id="orders" class="profile-tab-content">
+                        <!-- Rendered by script.js renderProfileOrders() -->
+                    </div>
+                    <div id="addresses" class="profile-tab-content">
+                        <!-- Rendered by script.js renderProfileAddresses() -->
+                    </div>
+                    <div id="myreviews" class="profile-tab-content">
+                        <!-- Rendered by script.js renderMyReviews() -->
+                    </div>
+                    <div id="wishlist" class="profile-tab-content">
+                        <div class="admin-card">
+                            <h3 style="margin-bottom:20px;">My Wishlist</h3>
+                            <div class="product-grid" id="wishlistGrid"></div>
+                        </div>
+                    </div>
+                    <div id="settings" class="profile-tab-content">
+                        <!-- Rendered by script.js renderProfileSettings() -->
+                    </div>
+                    <div id="petprofiles" class="profile-tab-content">
+                        <!-- Rendered by script.js renderPetProfiles() -->
+                    </div>
+                    <div id="loyalty" class="profile-tab-content">
+                        <!-- Rendered by script.js renderLoyaltyTab() inline -->
+                        <div class="admin-card" id="loyaltyTabContent">
+                            <h3 style="margin-bottom:20px;">&#127381; Loyalty Points</h3>
+                            <div id="loyaltyTabBody">Loading...</div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </section>
+
+<script src="js/api.js"></script>
+<script src="js/script.js"></script>
+<script src="js/api-bridge.js"></script>
+<script>
+// Override renderProfileOrders to load from API
+window.renderProfileOrders = async function() {
+    const container = document.getElementById('orders');
+    if (!container) return;
+    if (!window.API || !API.auth.isLoggedIn()) {
+        container.innerHTML = '<div class="admin-card"><p style="text-align:center;padding:40px;color:#aaa;">Please <a href="login.html">login</a> to view your orders.</p></div>';
+        return;
+    }
+    container.innerHTML = '<div class="admin-card"><p style="text-align:center;padding:40px;color:#aaa;"><i class="fas fa-spinner fa-spin"></i> Loading orders...</p></div>';
+    try {
+        const data = await API.orders.list();
+        const orders = data.orders || [];
+        if (!orders.length) {
+            container.innerHTML = '<div class="admin-card"><div style="text-align:center;padding:60px 20px;"><i class="fas fa-shopping-bag" style="font-size:3rem;color:#ddd;display:block;margin-bottom:16px;"></i><h3 style="color:#aaa;">No orders yet</h3><p style="color:#bbb;">Start shopping to see your orders here!</p><a href="shop.html" class="btn btn-primary" style="margin-top:16px;">Browse Shop</a></div></div>';
+            return;
+        }
+        const statusColors = { pending:"#f39c12", processing:"#3498db", shipped:"#9b59b6", delivered:"#27ae60", cancelled:"#e74c3c" };
+        container.innerHTML = '<div class="admin-card"><h3 style="margin-bottom:20px;">My Orders (' + orders.length + ')</h3>' +
+            orders.map(function(order) {
+                return '<div style="background:#f8f9fa;border-radius:12px;padding:16px;margin-bottom:12px;border:1px solid #eee;">' +
+                    '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">' +
+                    '<div><strong style="color:#2C3E50;">' + order.order_number + '</strong>' +
+                    '<div style="font-size:0.8rem;color:#aaa;margin-top:2px;">' + new Date(order.created_at).toLocaleDateString('en-PH', {year:"numeric",month:"long",day:"numeric"}) + '</div></div>' +
+                    '<div style="text-align:right;">' +
+                    '<span style="background:' + (statusColors[order.status]||"#888") + ';color:white;padding:3px 10px;border-radius:20px;font-size:0.75rem;text-transform:capitalize;">' + order.status + '</span>' +
+                    '<div style="font-size:1rem;font-weight:700;color:var(--primary);margin-top:4px;">&#8369;' + parseFloat(order.total).toLocaleString() + '</div>' +
+                    '</div></div>' +
+                    '<div style="font-size:0.82rem;color:#888;margin-top:8px;">' +
+                    '<i class="fas fa-box"></i> ' + (order.item_count||0) + ' items &nbsp;&middot;&nbsp; ' +
+                    '<i class="fas fa-credit-card"></i> ' + (order.payment_method||"cod").toUpperCase() +
+                    '</div></div>';
+            }).join('') + '</div>';
+    } catch(err) {
+        container.innerHTML = '<div class="admin-card"><p style="color:#e74c3c;text-align:center;padding:40px;">Error: ' + err.message + '</p></div>';
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelector('[data-tab="orders"]')?.addEventListener('click', function() {
+        renderProfileOrders();
+    });
+});
+</script>
+
+        // ─────────────────────────────────────────────
+        // Avatar Upload Logic (can be moved to script.js later)
+        // ─────────────────────────────────────────────
+
+        let currentAvatarBase64 = null;
+
+        // Load saved avatar on page load
+        function loadAvatar() {
+            const user = JSON.parse(localStorage.getItem('petPrestigeUser')) || {};
+            const avatar = user.avatar;
+
+            if (avatar) {
+                document.getElementById('profileAvatar').src = avatar;
+                document.getElementById('profileAvatar').style.display = 'block';
+                document.getElementById('profileAvatarFallback').style.display = 'none';
+
+                // Navbar avatar
+                const navImg = document.getElementById('navAvatar');
+                const navFallback = document.getElementById('navAvatarFallback');
+                navImg.src = avatar;
+                navImg.style.display = 'block';
+                navFallback.style.display = 'none';
+
+                document.getElementById('removeAvatarBtn').style.display = 'block';
+            }
+        }
+
+        // When user selects file
+        document.getElementById('avatarInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Optional: size limit ~2MB for avatar
+            if (file.size > 2 * 1024 * 1024) {
+                alert('Image is too large (max 2MB recommended for avatar)');
+                this.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                currentAvatarBase64 = event.target.result;
+
+                document.getElementById('profileAvatar').src = currentAvatarBase64;
+                document.getElementById('profileAvatar').style.display = 'block';
+                document.getElementById('profileAvatarFallback').style.display = 'none';
+
+                // Update navbar too
+                document.getElementById('navAvatar').src = currentAvatarBase64;
+                document.getElementById('navAvatar').style.display = 'block';
+                document.getElementById('navAvatarFallback').style.display = 'none';
+
+                document.getElementById('removeAvatarBtn').style.display = 'block';
+
+                // Auto-save to user object
+                const user = JSON.parse(localStorage.getItem('petPrestigeUser')) || {};
+                user.avatar = currentAvatarBase64;
+                localStorage.setItem('petPrestigeUser', JSON.stringify(user));
+
+                alert('Avatar updated!');
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function removeAvatar() {
+            if (!confirm('Remove your profile picture?')) return;
+
+            const user = JSON.parse(localStorage.getItem('petPrestigeUser')) || {};
+            delete user.avatar;
+            localStorage.setItem('petPrestigeUser', JSON.stringify(user));
+
+            document.getElementById('profileAvatar').style.display = 'none';
+            document.getElementById('profileAvatarFallback').style.display = 'flex';
+            document.getElementById('navAvatar').style.display = 'none';
+            document.getElementById('navAvatarFallback').style.display = 'block';
+            document.getElementById('removeAvatarBtn').style.display = 'none';
+
+            alert('Avatar removed.');
+        }
+
+        // Initialize profile
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCartCount();
+            updateWishlistCount();
+            loadProfile();
+            loadAvatar();
+
+            // Loyalty tab — render when clicked
+            document.querySelector('[data-tab="loyalty"]')?.addEventListener('click', function() {
+                renderLoyaltyTabContent();
+            });
+            // Pet tab — re-render when clicked
+            document.querySelector('[data-tab="petprofiles"]')?.addEventListener('click', function() {
+                const user = JSON.parse(localStorage.getItem('petPrestigeUser') || 'null');
+                if (user) renderPetProfiles(user);
+            });
+        });
+
+        function renderLoyaltyTabContent() {
+            const user = JSON.parse(localStorage.getItem('petPrestigeUser') || 'null');
+            const el   = document.getElementById('loyaltyTabBody');
+            if (!el) return;
+            if (!user) { el.innerHTML = '<p style="color:#aaa;text-align:center;padding:40px;">Please log in to view your points.</p>'; return; }
+
+            const points  = user.loyaltyPoints || 0;
+            const worth   = Math.floor(points * 0.50);
+            const orders  = JSON.parse(localStorage.getItem('petPrestigeOrders') || '[]')
+                              .filter(o => o.shippingInfo?.email === user.email && o.pointsEarned);
+
+            el.innerHTML =
+                '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">' +
+                '<div style="background:linear-gradient(135deg,#fff8f0,#fff3ec);border:1.5px solid #ffd0b3;border-radius:14px;padding:20px;text-align:center;">' +
+                '<div style="font-size:2.5rem;font-weight:800;color:var(--primary);">' + points + '</div>' +
+                '<div style="color:#888;font-size:0.88rem;">Total Points</div></div>' +
+                '<div style="background:linear-gradient(135deg,#f0fff4,#e8fdf0);border:1.5px solid #b7ebc8;border-radius:14px;padding:20px;text-align:center;">' +
+                '<div style="font-size:2.5rem;font-weight:800;color:#27ae60;">&#8369;' + worth + '</div>' +
+                '<div style="color:#888;font-size:0.88rem;">Redeemable Value</div></div>' +
+                '</div>' +
+
+                '<div style="background:#f8f9fa;border-radius:12px;padding:16px;margin-bottom:24px;">' +
+                '<h4 style="margin:0 0 10px;font-size:0.9rem;">How it works</h4>' +
+                '<div style="font-size:0.85rem;color:#555;line-height:1.8;">' +
+                '&#10003; Earn <strong>1 point</strong> for every &#8369;1 spent<br>' +
+                '&#10003; Redeem <strong>100 points</strong> minimum per order<br>' +
+                '&#10003; Each point = <strong>&#8369;0.50</strong> discount at checkout<br>' +
+                '&#10003; Points are credited when your order is placed' +
+                '</div></div>' +
+
+                (orders.length ?
+                '<h4 style="margin-bottom:12px;font-size:0.9rem;">Points History</h4>' +
+                '<div style="border:1px solid #eee;border-radius:10px;overflow:hidden;">' +
+                orders.slice(0,10).map(function(o) {
+                    return '<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:0.88rem;">' +
+                        '<span><strong>' + o.id + '</strong> · ' + new Date(o.date).toLocaleDateString('en-PH') + '</span>' +
+                        '<span style="color:#27ae60;font-weight:700;">+' + o.pointsEarned + ' pts</span></div>';
+                }).join('') + '</div>'
+                : '<p style="color:#aaa;text-align:center;padding:20px;">Place your first order to start earning points!</p>');
+        }
+    </script>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <img src="images/logo-pet-prestige.png" alt="Pet Prestige" style="height:60px; margin-bottom:15px;"
+                         onerror="this.outerHTML='<div style=\'font-size:2rem; margin-bottom:15px;\'>&#128062;</div>'">
+                    <p>Philippines&#39; trusted destination for premium pet care since 2025.</p>
+                    <div class="social-links" style="margin-top:20px;">
+                        <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" title="YouTube"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="shop.html?category=dogs">Dogs</a></li>
+                        <li><a href="shop.html?category=cats">Cats</a></li>
+                        <li><a href="shop.html?category=birds">Birds</a></li>
+                        <li><a href="shop.html?category=fish">Fish</a></li>
+                        <li><a href="shop.html?category=small-pets">Small Pets</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="learn.html">Pet Care Guides</a></li>
+                        <li><a href="lost-found.html">Lost &amp; Found</a></li>
+                        <li><a href="community.html">Community Forum</a></li>
+                        <li><a href="terms.html">Terms &amp; Conditions</a></li>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>Get in Touch</h4>
+                    <p><i class="fas fa-phone"></i> +63 912 345 6789</p>
+                    <p><i class="fas fa-envelope"></i> hello@petprestige.ph</p>
+                    <p><i class="fas fa-map-marker-alt"></i> Sapang Dalaga, Misamis Occidental</p>
+                    <p style="margin-top:15px; font-size:0.85rem; opacity:0.7;">
+                        <i class="fas fa-clock"></i> Mon&#8211;Sat, 8AM&#8211;6PM PHT
+                    </p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&#169; 2026 Pet Prestige. All rights reserved.</p>
+                <p style="margin-top:5px;">Made with &#128062; in the Philippines</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Support Chat Widget -->
+    <div class="chat-widget" id="chatWidget" style="display:none;">
+        <div class="chat-header">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="position:relative;">
+                    <div style="width:36px;height:36px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">&#128062;</div>
+                    <div style="position:absolute;bottom:0;right:0;width:10px;height:10px;background:#2ecc71;border-radius:50%;border:2px solid var(--primary);"></div>
+                </div>
+                <div>
+                    <h4 style="margin:0;font-size:0.95rem;">Pet Prestige AI Support</h4>
+                    <span style="font-size:0.72rem;opacity:0.85;">&#128994; Online &mdash; Powered by Claude AI</span>
+                </div>
+            </div>
+            <button onclick="closeSupportChat()" style="background:none;border:none;color:white;cursor:pointer;font-size:1.1rem;padding:4px;"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="chat-message bot">
+                <p>Hi there! &#128075; I'm Pet Prestige's AI assistant. I can help with pet care advice, product questions, orders, and shipping. What can I help you with today? &#128062;</p>
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Ask me anything about pets..."
+                   onkeypress="handleChatKeyPress(event)" autocomplete="off">
+            <button onclick="sendChatMessage()" title="Send"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+    <button class="chat-toggle" onclick="openSupportChat()" id="chatToggle" title="AI Support Chat">
+        <i class="fas fa-comments"></i>
+    </button>
+</body>
+</html>

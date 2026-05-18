@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviews - Pet Prestige Admin</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="admin-body" data-admin-page="true">
+<script src="../js/admin-guard.js"></script>
+<div class="admin-wrapper">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="admin-logo" style="padding:20px 16px;">
+            <a href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+                <img src="../images/logo-pet-prestige.png" alt="Pet Prestige" class="logo-img-main" style="height:54px;"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div class="logo-fallback" style="display:none;align-items:center;gap:8px;">
+                    <div class="logo-icon" style="font-size:1.6rem;">🐾</div>
+                    <div class="logo-text">
+                        <span class="logo-main" style="color:white;font-size:1rem;">Pet Prestige</span>
+                        <span class="logo-tagline" style="color:rgba(255,255,255,0.7);font-size:0.72rem;display:block;">Admin Panel</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <nav class="admin-nav">
+            <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="products.html"><i class="fas fa-box"></i> Products</a>
+            <a href="orders.html"><i class="fas fa-shopping-bag"></i> Orders</a>
+            <a href="customers.html"><i class="fas fa-users"></i> Customers</a>
+            <a href="reviews.html" class="active"><i class="fas fa-star"></i> Reviews</a>
+            <a href="lost-found-admin.html"><i class="fas fa-paw"></i> Lost & Found</a>
+            <a href="reports.html"><i class="fas fa-chart-bar"></i> Reports</a>
+            <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+        </nav>
+
+        <div class="admin-sidebar-bottom">
+            <a href="../index.html" target="_blank"><i class="fas fa-store"></i> View Store</a>
+            <a href="#" onclick="logoutAdmin()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <header class="admin-header">
+            <h1>Manage Reviews</h1>
+            <div class="admin-actions">
+                <input type="text" id="reviewSearch" placeholder="Search by product or reviewer..." oninput="renderReviews()">
+                <select id="ratingFilter" onchange="renderReviews()">
+                    <option value="all">All Ratings</option>
+                    <option value="5">5 Stars</option>
+                    <option value="4">4+ Stars</option>
+                    <option value="3">3+ Stars</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <div class="admin-card">
+                <div class="card-header">
+                    <h3>All Reviews (<span id="reviewCount">0</span>)</h3>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Reviewer</th>
+                                <th>Rating</th>
+                                <th>Review</th>
+                                <th>Date</th>
+                                <th>Admin Reply</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reviewsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Reply Modal -->
+    <div class="modal" id="replyModal" style="display:none;">
+        <div class="modal-content" style="max-width:600px;">
+            <button class="modal-close" onclick="closeReplyModal()">×</button>
+            <h2>Reply to Review</h2>
+            
+            <div id="replyPreview" style="margin-bottom:20px; padding:15px; background:#f8f9fa; border-radius:8px;"></div>
+            
+            <textarea id="replyText" rows="5" placeholder="Write your response here..."></textarea>
+            
+            <div style="margin-top:20px; text-align:right;">
+                <button class="btn btn-outline" onclick="closeReplyModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="submitReply()">Send Reply</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="deleteReviewModal" style="display:none;">
+        <div class="modal-content" style="max-width:400px; text-align:center;">
+            <h3>Confirm Delete</h3>
+            <p>Are you sure you want to delete this review? This cannot be undone.</p>
+            <div style="margin-top:30px;">
+                <button class="btn btn-outline" onclick="closeDeleteReviewModal()">Cancel</button>
+                <button class="btn btn-danger" id="confirmDeleteReviewBtn">Delete Review</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../js/admin-common.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/script.js"></script>
+<script src="../js/api-bridge.js"></script><script> 
+// Global variables
+let currentReviewKey = null; // e.g. "productId_reviewId"
+let deleteReviewKey = null;
+
+// Load and render reviews
+function renderReviews() {
+    const reviewsData = JSON.parse(localStorage.getItem('petPrestigeReviews') || '{}');
+    const adminReplies = JSON.parse(localStorage.getItem('petPrestigeAdminReplies') || '{}');
+    
+    const search = document.getElementById('reviewSearch')?.value?.toLowerCase() || '';
+    const ratingFilter = document.getElementById('ratingFilter')?.value || 'all';
+
+    let allReviews = [];
+    Object.keys(reviewsData).forEach(productId => {
+        reviewsData[productId].forEach(review => {
+            allReviews.push({
+                productId,
+                reviewId: review.id,
+                productName: DB.products.find(p => p.id === parseInt(productId))?.name || 'Unknown Product',
+                reviewer: review.author,
+                rating: review.rating,
+                text: review.text,
+                date: review.date,
+                adminReply: adminReplies[`${productId}_${review.id}`]?.text || null,
+                adminReplyDate: adminReplies[`${productId}_${review.id}`]?.date || null
+            });
+        });
+    });
+
+    // Apply filters
+    let filtered = allReviews.filter(r => {
+        const matchSearch = !search || 
+            r.productName.toLowerCase().includes(search) || 
+            r.reviewer.toLowerCase().includes(search) || 
+            r.text.toLowerCase().includes(search);
+        const matchRating = ratingFilter === 'all' || r.rating >= parseInt(ratingFilter);
+        return matchSearch && matchRating;
+    });
+
+    document.getElementById('reviewCount').textContent = filtered.length;
+
+    const table = document.getElementById('reviewsTable');
+    table.innerHTML = filtered.length ? filtered.map(r => `
+        <tr>
+            <td>${r.productName}</td>
+            <td>${r.reviewer}</td>
+            <td>${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</td>
+            <td style="max-width:300px;">${r.text.substring(0, 120)}${r.text.length > 120 ? '...' : ''}</td>
+            <td>${r.date}</td>
+            <td>
+                ${r.adminReply ? 
+                    `<span style="color:#27ae60;">Replied</span><br><small>${r.adminReply.substring(0,40)}...</small>` : 
+                    '<span style="color:#f39c12;">Pending</span>'
+                }
+            </td>
+            <td>
+                <button class="btn btn-sm btn-primary" onclick="openReplyModal('${r.productId}', '${r.reviewId}', '${r.reviewer}', '${r.text.replace(/'/g, "\\'")}', ${r.rating})">
+                    ${r.adminReply ? 'Edit Reply' : 'Reply'}
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="confirmDeleteReview('${r.productId}', '${r.reviewId}')">Delete</button>
+            </td>
+        </tr>
+    `).join('') : '<tr><td colspan="7" style="text-align:center;padding:40px;color:#aaa;">No reviews found.</td></tr>';
+}
+
+// Open reply modal
+function openReplyModal(productId, reviewId, reviewer, text, rating) {
+    currentReviewKey = `${productId}_${reviewId}`;
+
+    const preview = document.getElementById('replyPreview');
+    preview.innerHTML = `
+        <strong>${reviewer}</strong> ${'★'.repeat(rating)}<br>
+        <small>${new Date().toLocaleDateString()}</small><br><br>
+        <p style="color:#555;">${text}</p>
+    `;
+
+    const adminReplies = JSON.parse(localStorage.getItem('petPrestigeAdminReplies') || '{}');
+    document.getElementById('replyText').value = adminReplies[currentReviewKey]?.text || '';
+
+    document.getElementById('replyModal').style.display = 'flex';
+}
+
+function closeReplyModal() {
+    document.getElementById('replyModal').style.display = 'none';
+    currentReviewKey = null;
+}
+
+function submitReply() {
+    const text = document.getElementById('replyText').value.trim();
+    if (!text) return alert('Please write a reply');
+
+    let adminReplies = JSON.parse(localStorage.getItem('petPrestigeAdminReplies') || '{}');
+    adminReplies[currentReviewKey] = {
+        text,
+        date: new Date().toLocaleDateString()
+    };
+    localStorage.setItem('petPrestigeAdminReplies', JSON.stringify(adminReplies));
+
+    alert('Reply saved!');
+    closeReplyModal();
+    renderReviews();
+}
+
+// Delete review confirmation
+function confirmDeleteReview(productId, reviewId) {
+    deleteReviewKey = `${productId}_${reviewId}`;
+    document.getElementById('deleteReviewModal').style.display = 'flex';
+}
+
+function closeDeleteReviewModal() {
+    document.getElementById('deleteReviewModal').style.display = 'none';
+    deleteReviewKey = null;
+}
+
+document.getElementById('confirmDeleteReviewBtn')?.addEventListener('click', function() {
+    if (!deleteReviewKey) return;
+
+    const [productId, reviewId] = deleteReviewKey.split('_');
+    let reviews = JSON.parse(localStorage.getItem('petPrestigeReviews') || '{}');
+    if (reviews[productId]) {
+        reviews[productId] = reviews[productId].filter(r => r.id !== parseInt(reviewId));
+        if (reviews[productId].length === 0) delete reviews[productId];
+        localStorage.setItem('petPrestigeReviews', JSON.stringify(reviews));
+    }
+
+    // Also remove any admin reply
+    let adminReplies = JSON.parse(localStorage.getItem('petPrestigeAdminReplies') || '{}');
+    delete adminReplies[deleteReviewKey];
+    localStorage.setItem('petPrestigeAdminReplies', JSON.stringify(adminReplies));
+
+    alert('Review deleted!');
+    closeDeleteReviewModal();
+    renderReviews();
+});
+
+function logoutAdmin() {
+    if (confirm('Logout from admin panel?')) {
+        localStorage.removeItem('petPrestigeAdminSession');
+        localStorage.removeItem('petPrestigeUser');
+        window.location.href = '../login.html?logout=1';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    renderReviews();
+});
+</script>
+</body>
+</html>

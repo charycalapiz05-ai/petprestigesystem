@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Analytics - Pet Prestige Admin</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="admin-body" data-admin-page="true">
+<script src="../js/admin-guard.js"></script>
+<div class="admin-wrapper">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="admin-logo" style="padding:20px 16px;">
+            <a href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+                <img src="../images/logo-pet-prestige.png" alt="Pet Prestige" class="logo-img-main" style="height:54px;"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div class="logo-fallback" style="display:none;align-items:center;gap:8px;">
+                    <div class="logo-icon" style="font-size:1.6rem;">🐾</div>
+                    <div class="logo-text">
+                        <span class="logo-main" style="color:white;font-size:1rem;">Pet Prestige</span>
+                        <span class="logo-tagline" style="color:rgba(255,255,255,0.7);font-size:0.72rem;display:block;">Admin Panel</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <nav class="admin-nav">
+            <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="products.html"><i class="fas fa-box"></i> Products</a>
+            <a href="orders.html"><i class="fas fa-shopping-bag"></i> Orders</a>
+            <a href="customers.html"><i class="fas fa-users"></i> Customers</a>
+            <a href="reviews.html"><i class="fas fa-star"></i> Reviews</a>
+            <a href="lost-found-admin.html"><i class="fas fa-paw"></i> Lost & Found</a>
+            <a href="community-admin.html"><i class="fas fa-comments"></i> Community</a>
+            <a href="reports.html" class="active"><i class="fas fa-chart-bar"></i> Reports</a>
+            <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+        </nav>
+
+        <div class="admin-sidebar-bottom">
+            <a href="../index.html" target="_blank"><i class="fas fa-store"></i> View Store</a>
+            <a href="#" onclick="logoutAdmin()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <header class="admin-header">
+            <h1>Reports & Analytics</h1>
+            <div class="admin-actions">
+                <div class="date-range">
+                    <label>From:</label>
+                    <input type="date" id="dateFrom">
+                    <label>To:</label>
+                    <input type="date" id="dateTo">
+                    <button class="btn btn-primary btn-sm" onclick="updateReports()">Apply</button>
+                </div>
+                <button class="btn btn-outline" onclick="exportReportSummary()">
+                    <i class="fas fa-download"></i> Export Summary
+                </button>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <!-- Summary Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-peso-sign"></i></div>
+                    <div class="stat-info">
+                        <h3>Total Revenue</h3>
+                        <p id="totalRevenue">₱0.00</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+                    <div class="stat-info">
+                        <h3>Total Orders</h3>
+                        <p id="totalOrders">0</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="stat-info">
+                        <h3>Avg Order Value</h3>
+                        <p id="avgOrderValue">₱0.00</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <h3>Unique Customers</h3>
+                        <p id="uniqueCustomers">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="dashboard-grid">
+                <!-- Sales Trend -->
+                <div class="admin-card">
+                    <h3>Sales Over Time</h3>
+                    <canvas id="salesTrendChart" height="180"></canvas>
+                </div>
+
+                <!-- Orders by Status -->
+                <div class="admin-card">
+                    <h3>Orders by Status</h3>
+                    <canvas id="statusChart" height="180"></canvas>
+                </div>
+
+                <!-- Top Products -->
+                <div class="admin-card">
+                    <h3>Top Selling Products</h3>
+                    <canvas id="topProductsChart" height="180"></canvas>
+                </div>
+
+                <!-- Category Breakdown -->
+                <div class="admin-card">
+                    <h3>Product Category Distribution</h3>
+                    <canvas id="categoryChart" height="180"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="../js/admin-common.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/script.js"></script>
+<script src="../js/api-bridge.js"></script>
+// Helper: Get filtered orders
+function getFilteredOrders() {
+    let orders = JSON.parse(localStorage.getItem('petPrestigeOrders') || '[]');
+    const from = document.getElementById('dateFrom')?.value;
+    const to = document.getElementById('dateTo')?.value;
+
+    if (from) orders = orders.filter(o => new Date(o.date) >= new Date(from));
+    if (to) orders = orders.filter(o => new Date(o.date) <= new Date(to + 'T23:59:59'));
+
+    return orders;
+}
+
+// Calculate summary stats
+function calculateStats(orders) {
+    const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+    const totalOrders = orders.length;
+    const avgOrderValue = totalOrders ? (totalRevenue / totalOrders).toFixed(2) : 0;
+
+    const customers = new Set(orders.map(o => o.shippingInfo?.email || '').filter(Boolean));
+    const uniqueCustomers = customers.size;
+
+    return { totalRevenue, totalOrders, avgOrderValue, uniqueCustomers };
+}
+
+// Render all charts and stats
+function updateReports() {
+    const orders = getFilteredOrders();
+    const stats = calculateStats(orders);
+
+    // Update cards
+    document.getElementById('totalRevenue').textContent = '₱' + stats.totalRevenue.toLocaleString();
+    document.getElementById('totalOrders').textContent = stats.totalOrders;
+    document.getElementById('avgOrderValue').textContent = '₱' + stats.avgOrderValue;
+    document.getElementById('uniqueCustomers').textContent = stats.uniqueCustomers;
+
+    renderCharts(orders);
+}
+
+// Chart instance registry to prevent memory leaks
+const reportCharts = {};
+
+function destroyChart(id) {
+    if (reportCharts[id]) {
+        reportCharts[id].destroy();
+        delete reportCharts[id];
+    }
+}
+
+// Render charts
+function renderCharts(orders) {
+    // Destroy all existing chart instances first
+    ['salesTrendChart','statusChart','topProductsChart','categoryChart'].forEach(destroyChart);
+    // 1. Sales Trend (monthly)
+    const salesByMonth = {};
+    orders.forEach(o => {
+        const month = new Date(o.date).toLocaleString('default', { month: 'short', year: 'numeric' });
+        salesByMonth[month] = (salesByMonth[month] || 0) + (o.total || 0);
+    });
+
+    const salesTrendCtx = document.getElementById('salesTrendChart').getContext('2d');
+    reportCharts['salesTrendChart'] = new Chart(salesTrendCtx, {
+        type: 'line',
+        data: {
+            labels: Object.keys(salesByMonth),
+            datasets: [{
+                label: 'Revenue (₱)',
+                data: Object.values(salesByMonth),
+                borderColor: '#FF6B35',
+                backgroundColor: 'rgba(255,107,53,0.2)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    // 2. Orders by Status (doughnut)
+    const statusCount = { pending:0, processing:0, shipped:0, delivered:0, cancelled:0 };
+    orders.forEach(o => statusCount[o.status] = (statusCount[o.status] || 0) + 1);
+
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    reportCharts['statusChart'] = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
+            datasets: [{
+                data: Object.values(statusCount),
+                backgroundColor: ['#f39c12', '#3498db', '#9b59b6', '#27ae60', '#e74c3c']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    // 3. Top Products (bar)
+    const productSales = {};
+    orders.forEach(o => {
+        o.items?.forEach(item => {
+            productSales[item.name] = (productSales[item.name] || 0) + (item.quantity * item.price);
+        });
+    });
+
+    const topProducts = Object.entries(productSales)
+        .sort((a,b) => b[1] - a[1])
+        .slice(0, 8);
+
+    const topCtx = document.getElementById('topProductsChart').getContext('2d');
+    reportCharts['topProductsChart'] = new Chart(topCtx, {
+        type: 'bar',
+        data: {
+            labels: topProducts.map(([name]) => name.substring(0,20) + (name.length > 20 ? '...' : '')),
+            datasets: [{
+                label: 'Revenue (₱)',
+                data: topProducts.map(([, val]) => val),
+                backgroundColor: '#FF6B35'
+            }]
+        },
+        options: {
+            responsive: true,
+            indexAxis: 'y',
+            scales: { x: { beginAtZero: true } }
+        }
+    });
+
+    // 4. Category Distribution (pie)
+    const categoryCount = {};
+    const products = [...DB.products, ...JSON.parse(localStorage.getItem('petPrestigeCustomProducts') || '[]')];
+    orders.forEach(o => {
+        o.items?.forEach(item => {
+            const prod = products.find(p => p.id === item.id);
+            if (prod?.category) {
+                categoryCount[prod.category] = (categoryCount[prod.category] || 0) + 1;
+            }
+        });
+    });
+
+    const catCtx = document.getElementById('categoryChart').getContext('2d');
+    reportCharts['categoryChart'] = new Chart(catCtx, {
+        type: 'pie',
+        data: {
+            labels: Object.keys(categoryCount),
+            datasets: [{
+                data: Object.values(categoryCount),
+                backgroundColor: ['#FF6B35', '#4ECDC4', '#FFE66D', '#6BCB77', '#FF6B6B', '#9B59B6']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+}
+
+function exportReportSummary() {
+    const orders = getFilteredOrders();
+    const stats = calculateStats(orders);
+
+    const headers = ['Metric', 'Value'];
+    const rows = [
+        ['Total Revenue', stats.totalRevenue],
+        ['Total Orders', stats.totalOrders],
+        ['Average Order Value', stats.avgOrderValue],
+        ['Unique Customers', stats.uniqueCustomers]
+    ];
+
+    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'petprestige_report_summary.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    alert('Summary exported as CSV');
+}
+
+function logoutAdmin() {
+    if (confirm('Logout from admin panel?')) {
+        localStorage.removeItem('petPrestigeAdminSession');
+        localStorage.removeItem('petPrestigeUser');
+        window.location.href = '../login.html?logout=1';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateReports();
+});
+</script>
+</body>
+</html>

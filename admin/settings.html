@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Pet Prestige Admin</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .voucher-table-wrap { overflow-x: auto; }
+        .voucher-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 600; }
+        .voucher-badge.percent { background: #d5f5e3; color: #1e8449; }
+        .voucher-badge.shipping { background: #d6eaf8; color: #1a5276; }
+        .voucher-badge.fixed { background: #fdebd0; color: #935116; }
+        .voucher-badge.inactive { background: #f2f3f4; color: #aaa; }
+        .danger-zone { border: 2px solid #e74c3c !important; }
+        .settings-tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+        .settings-tab { padding: 9px 20px; border-radius: 8px; border: 1.5px solid #ddd; background: white; cursor: pointer; font-family: inherit; font-size: 0.9rem; color: #666; transition: all 0.2s; }
+        .settings-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .settings-panel { display: none; }
+        .settings-panel.active { display: block; }
+    </style>
+</head>
+<body class="admin-body" data-admin-page="true">
+<script src="../js/admin-guard.js"></script>
+<div class="admin-wrapper">
+    <aside class="admin-sidebar">
+        <div class="admin-logo" style="padding:20px 16px;">
+            <a href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+                <img src="../images/logo-pet-prestige.png" alt="Pet Prestige" class="logo-img-main" style="height:54px;"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div class="logo-fallback" style="display:none;align-items:center;gap:8px;">
+                    <div class="logo-icon" style="font-size:1.6rem;">🐾</div>
+                    <div class="logo-text">
+                        <span class="logo-main" style="color:white;font-size:1rem;">Pet Prestige</span>
+                        <span class="logo-tagline" style="color:rgba(255,255,255,0.7);font-size:0.72rem;display:block;">Admin Panel</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <nav class="admin-nav">
+            <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="products.html"><i class="fas fa-box"></i> Products</a>
+            <a href="orders.html"><i class="fas fa-shopping-bag"></i> Orders</a>
+            <a href="customers.html"><i class="fas fa-users"></i> Customers</a>
+            <a href="reviews.html"><i class="fas fa-star"></i> Reviews</a>
+            <a href="lost-found-admin.html"><i class="fas fa-paw"></i> Lost & Found</a>
+            <a href="community-admin.html"><i class="fas fa-comments"></i> Community</a>
+            <a href="reports.html"><i class="fas fa-chart-bar"></i> Reports</a>
+            <a href="settings.html" class="active"><i class="fas fa-cog"></i> Settings</a>
+        </nav>
+        <div class="admin-sidebar-bottom">
+            <a href="../index.html" target="_blank"><i class="fas fa-store"></i> View Store</a>
+            <a href="#" onclick="logoutAdmin()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-header"><h1>Settings</h1></header>
+
+        <div class="admin-content">
+            <!-- Tab Navigation -->
+            <div class="settings-tabs">
+                <button class="settings-tab active" onclick="switchTab('site')"><i class="fas fa-store"></i> Site Info</button>
+                <button class="settings-tab" onclick="switchTab('shipping')"><i class="fas fa-truck"></i> Shipping</button>
+                <button class="settings-tab" onclick="switchTab('vouchers')"><i class="fas fa-ticket-alt"></i> Vouchers</button>
+                <button class="settings-tab" onclick="switchTab('notifications')"><i class="fas fa-bell"></i> Notifications</button>
+                <button class="settings-tab" onclick="switchTab('maintenance')"><i class="fas fa-tools"></i> Maintenance</button>
+            </div>
+
+            <!-- Site Info Panel -->
+            <div id="panel-site" class="settings-panel active">
+                <div class="admin-card">
+                    <h3>Site Information</h3>
+                    <div class="form-group"><label>Site Name</label><input type="text" id="siteName" value="Pet Prestige"></div>
+                    <div class="form-group"><label>Contact Email</label><input type="email" id="siteEmail" value="hello@petprestige.ph"></div>
+                    <div class="form-group"><label>Phone Number</label><input type="tel" id="sitePhone" value="+63 912 345 6789"></div>
+                    <button class="btn btn-primary" onclick="saveSiteSettings()">Save Changes</button>
+                </div>
+            </div>
+
+            <!-- Shipping Panel -->
+            <div id="panel-shipping" class="settings-panel">
+                <div class="admin-card">
+                    <h3>Shipping Settings</h3>
+                    <div class="form-group">
+                        <label>Free Shipping Threshold (₱)</label>
+                        <input type="number" id="freeShippingThreshold" value="500" min="0">
+                        <small style="color:#888;">Orders at or above this amount get free shipping</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Flat Shipping Fee (₱)</label>
+                        <input type="number" id="flatShippingFee" value="80" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Low Stock Alert Threshold</label>
+                        <input type="number" id="lowStockThreshold" value="5" min="1">
+                        <small style="color:#888;">Show warning when stock is at or below this number</small>
+                    </div>
+                    <div class="form-group">
+                        <label><input type="checkbox" id="enableVouchers" checked> Enable Voucher System</label>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveShippingSettings()">Save Shipping Settings</button>
+                </div>
+            </div>
+
+            <!-- Vouchers Panel -->
+            <div id="panel-vouchers" class="settings-panel">
+                <div class="admin-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                        <h3 style="margin:0;">Voucher Codes (<span id="voucherCount">0</span>)</h3>
+                        <button class="btn btn-primary" onclick="openVoucherModal()"><i class="fas fa-plus"></i> Add Voucher</button>
+                    </div>
+
+                    <div class="voucher-table-wrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Type</th>
+                                    <th>Value</th>
+                                    <th>Min. Spend</th>
+                                    <th>Uses</th>
+                                    <th>Max Uses</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vouchersTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications Panel -->
+            <div id="panel-notifications" class="settings-panel">
+                <div class="admin-card">
+                    <h3>Sales Summary Email</h3>
+                    <p style="color:#666;font-size:0.9rem;margin-bottom:20px;">Generate and send a sales digest to the admin email address.</p>
+                    <div class="form-group">
+                        <label>Admin Email</label>
+                        <input type="email" id="notifAdminEmail" placeholder="admin@petprestige.ph">
+                    </div>
+                    <div class="form-group">
+                        <label>Period</label>
+                        <select id="salesDigestPeriod" style="padding:9px 12px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:0.9rem;outline:none;width:100%;">
+                            <option value="today">Today</option>
+                            <option value="week" selected>Last 7 Days</option>
+                            <option value="month">Last 30 Days</option>
+                        </select>
+                    </div>
+                    <div id="salesDigestPreview" style="display:none;background:#f8f9fa;border-radius:10px;padding:16px;margin-bottom:16px;font-size:0.88rem;white-space:pre-line;font-family:monospace;max-height:280px;overflow-y:auto;"></div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <button class="btn btn-outline" onclick="previewSalesDigest()"><i class="fas fa-eye"></i> Preview</button>
+                        <button class="btn btn-primary" onclick="sendSalesDigest()"><i class="fas fa-envelope"></i> Send via Email Client</button>
+                    </div>
+                </div>
+
+                <div class="admin-card">
+                    <h3>Inventory Restock Alert</h3>
+                    <p style="color:#666;font-size:0.9rem;margin-bottom:20px;">Send yourself an email listing all products at or below the low-stock threshold.</p>
+                    <div id="lowStockPreview" style="display:none;background:#fff8f0;border:1.5px solid #ffd0b3;border-radius:10px;padding:16px;margin-bottom:16px;font-size:0.88rem;max-height:240px;overflow-y:auto;"></div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <button class="btn btn-outline" onclick="previewLowStock()"><i class="fas fa-eye"></i> Preview Low Stock</button>
+                        <button class="btn btn-primary" onclick="sendLowStockAlert()"><i class="fas fa-envelope"></i> Send Restock Alert</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Maintenance Panel -->
+            <div id="panel-maintenance" class="settings-panel">
+                <div class="admin-card">
+                    <h3>Maintenance & Cache</h3>
+                    <p style="color:#666;margin-bottom:20px;">Clear temporary data or reset parts of the site. Some actions are irreversible.</p>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
+                        <button class="btn btn-outline" onclick="clearCart()"><i class="fas fa-broom"></i> Clear All Carts</button>
+                        <button class="btn btn-outline" onclick="clearOrders()"><i class="fas fa-broom"></i> Clear All Orders</button>
+                        <button class="btn btn-outline" onclick="clearReviews()"><i class="fas fa-broom"></i> Clear All Reviews</button>
+                        <button class="btn btn-outline" onclick="clearLostFound()"><i class="fas fa-broom"></i> Clear Lost & Found</button>
+                    </div>
+                </div>
+
+                <div class="admin-card danger-zone">
+                    <h3 style="color:#e74c3c;">Danger Zone</h3>
+                    <p style="color:#666;margin-bottom:20px;">These actions permanently delete data and cannot be undone.</p>
+                    <button class="btn btn-danger btn-block" onclick="resetAllData()">
+                        <i class="fas fa-skull-crossbones"></i> Reset ALL Site Data (Full Wipe)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Voucher Add/Edit Modal -->
+    <div class="modal" id="voucherModal" style="display:none;">
+        <div class="modal-content" style="max-width:520px;">
+            <button class="modal-close" onclick="closeVoucherModal()">×</button>
+            <h2 id="voucherModalTitle">Add Voucher</h2>
+
+            <div class="form-group">
+                <label>Voucher Code * <small style="color:#888;">(uppercase, no spaces)</small></label>
+                <input type="text" id="vCode" placeholder="e.g. PETLOVE20" oninput="this.value=this.value.toUpperCase().replace(/\s/g,'')">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Type *</label>
+                    <select id="vType" onchange="updateVoucherValueLabel()">
+                        <option value="percent">Percentage Off</option>
+                        <option value="fixed">Fixed Amount Off</option>
+                        <option value="shipping">Free Shipping</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label id="vValueLabel">Discount Value (%)</label>
+                    <input type="number" id="vValue" min="1" placeholder="e.g. 10">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Min. Spend (₱)</label>
+                    <input type="number" id="vMinSpend" min="0" placeholder="e.g. 500">
+                </div>
+                <div class="form-group">
+                    <label>Max Uses (0 = unlimited)</label>
+                    <input type="number" id="vMaxUses" min="0" value="0">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <input type="text" id="vDescription" placeholder="e.g. 10% off on orders ₱500+">
+            </div>
+            <div class="form-group">
+                <label><input type="checkbox" id="vActive" checked> Active</label>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-outline" onclick="closeVoucherModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveVoucher()">Save Voucher</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../js/admin-common.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/script.js"></script>
+<script src="../js/api-bridge.js"></script><script>
+// ── Default vouchers from script.js ──────────────────────────
+const DEFAULT_VOUCHERS = [
+    { code: 'SAVE8',    type: 'percent',  value: 8,  minSpend: 1000, description: '8% off — min. ₱1,000 spend',    maxUses: 0, uses: 0, active: true },
+    { code: 'SAVE9',    type: 'percent',  value: 9,  minSpend: 2000, description: '9% off — min. ₱2,000 spend',    maxUses: 0, uses: 0, active: true },
+    { code: 'SAVE10',   type: 'percent',  value: 10, minSpend: 5000, description: '10% off — min. ₱5,000 spend',   maxUses: 0, uses: 0, active: true },
+    { code: 'FREESHIP', type: 'shipping', value: 80, minSpend: 500,  description: 'Free shipping — min. ₱500 spend', maxUses: 0, uses: 0, active: true },
+    { code: 'PETLOVE',  type: 'percent',  value: 15, minSpend: 1500, description: '15% off — min. ₱1,500 spend',   maxUses: 0, uses: 0, active: true }
+];
+
+let editingVoucherCode = null;
+
+function getVouchers() {
+    const stored = localStorage.getItem('petPrestigeVoucherList');
+    if (!stored) {
+        localStorage.setItem('petPrestigeVoucherList', JSON.stringify(DEFAULT_VOUCHERS));
+        return DEFAULT_VOUCHERS;
+    }
+    return JSON.parse(stored);
+}
+
+function saveVouchers(list) {
+    localStorage.setItem('petPrestigeVoucherList', JSON.stringify(list));
+    // Also sync to VOUCHERS object format for script.js compatibility
+    const map = {};
+    list.filter(v => v.active).forEach(v => {
+        map[v.code] = { type: v.type, value: v.value, minSpend: v.minSpend || 0, description: v.description };
+    });
+    localStorage.setItem('petPrestigeVouchersMap', JSON.stringify(map));
+}
+
+function renderVouchers() {
+    const vouchers = getVouchers();
+    const tbody = document.getElementById('vouchersTable');
+    const countEl = document.getElementById('voucherCount');
+    if (countEl) countEl.textContent = vouchers.length;
+
+    tbody.innerHTML = vouchers.length ? vouchers.map(v => `
+        <tr>
+            <td><strong style="font-family:monospace;font-size:1rem;">${v.code}</strong></td>
+            <td><span class="voucher-badge ${v.type}">${v.type === 'percent' ? 'Percentage' : v.type === 'shipping' ? 'Free Shipping' : 'Fixed Amount'}</span></td>
+            <td>${v.type === 'percent' ? v.value + '%' : v.type === 'shipping' ? 'Free' : '₱' + v.value}</td>
+            <td>${v.minSpend ? '₱' + v.minSpend.toLocaleString() : '—'}</td>
+            <td>${v.uses || 0}</td>
+            <td>${v.maxUses ? v.maxUses : '∞'}</td>
+            <td>
+                <span class="voucher-badge ${v.active ? (v.type) : 'inactive'}">
+                    ${v.active ? 'Active' : 'Inactive'}
+                </span>
+            </td>
+            <td>
+                <button class="btn btn-sm btn-primary" onclick="editVoucher('${v.code}')">Edit</button>
+                <button class="btn btn-sm btn-outline" onclick="toggleVoucher('${v.code}')">${v.active ? 'Disable' : 'Enable'}</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteVoucher('${v.code}')">Delete</button>
+            </td>
+        </tr>
+    `).join('') : '<tr><td colspan="8" style="text-align:center;padding:30px;color:#aaa;">No vouchers yet. Add one above.</td></tr>';
+}
+
+function openVoucherModal(code = null) {
+    editingVoucherCode = code;
+    const modal = document.getElementById('voucherModal');
+    document.getElementById('voucherModalTitle').textContent = code ? 'Edit Voucher' : 'Add Voucher';
+
+    if (code) {
+        const v = getVouchers().find(x => x.code === code);
+        if (v) {
+            document.getElementById('vCode').value = v.code;
+            document.getElementById('vCode').readOnly = true;
+            document.getElementById('vType').value = v.type;
+            document.getElementById('vValue').value = v.value;
+            document.getElementById('vMinSpend').value = v.minSpend || '';
+            document.getElementById('vMaxUses').value = v.maxUses || 0;
+            document.getElementById('vDescription').value = v.description || '';
+            document.getElementById('vActive').checked = v.active !== false;
+        }
+    } else {
+        document.getElementById('vCode').value = '';
+        document.getElementById('vCode').readOnly = false;
+        document.getElementById('vType').value = 'percent';
+        document.getElementById('vValue').value = '';
+        document.getElementById('vMinSpend').value = '';
+        document.getElementById('vMaxUses').value = 0;
+        document.getElementById('vDescription').value = '';
+        document.getElementById('vActive').checked = true;
+    }
+    updateVoucherValueLabel();
+    modal.style.display = 'flex';
+}
+
+function editVoucher(code) { openVoucherModal(code); }
+
+function closeVoucherModal() {
+    document.getElementById('voucherModal').style.display = 'none';
+    editingVoucherCode = null;
+}
+
+function updateVoucherValueLabel() {
+    const type = document.getElementById('vType').value;
+    const label = document.getElementById('vValueLabel');
+    if (label) {
+        label.textContent = type === 'percent' ? 'Discount Value (%)' : type === 'fixed' ? 'Discount Amount (₱)' : 'Shipping Value (₱)';
+    }
+}
+
+function saveVoucher() {
+    const code = document.getElementById('vCode').value.trim().toUpperCase();
+    const type = document.getElementById('vType').value;
+    const value = parseFloat(document.getElementById('vValue').value) || 0;
+    const minSpend = parseFloat(document.getElementById('vMinSpend').value) || 0;
+    const maxUses = parseInt(document.getElementById('vMaxUses').value) || 0;
+    const description = document.getElementById('vDescription').value.trim();
+    const active = document.getElementById('vActive').checked;
+
+    if (!code) { alert('Please enter a voucher code.'); return; }
+    if (value <= 0 && type !== 'shipping') { alert('Please enter a valid discount value.'); return; }
+
+    let vouchers = getVouchers();
+
+    if (editingVoucherCode) {
+        const idx = vouchers.findIndex(v => v.code === editingVoucherCode);
+        if (idx !== -1) {
+            vouchers[idx] = { ...vouchers[idx], type, value, minSpend, maxUses, description, active };
+        }
+    } else {
+        if (vouchers.find(v => v.code === code)) { alert('A voucher with this code already exists.'); return; }
+        vouchers.push({ code, type, value, minSpend, maxUses, description, active, uses: 0 });
+    }
+
+    saveVouchers(vouchers);
+    closeVoucherModal();
+    renderVouchers();
+    showAdminToast(editingVoucherCode ? 'Voucher updated!' : 'Voucher added!');
+}
+
+function toggleVoucher(code) {
+    let vouchers = getVouchers();
+    const v = vouchers.find(x => x.code === code);
+    if (v) { v.active = !v.active; saveVouchers(vouchers); renderVouchers(); showAdminToast(`Voucher ${v.active ? 'enabled' : 'disabled'}.`); }
+}
+
+function deleteVoucher(code) {
+    if (!confirm(`Delete voucher "${code}"? This cannot be undone.`)) return;
+    let vouchers = getVouchers().filter(v => v.code !== code);
+    saveVouchers(vouchers);
+    renderVouchers();
+    showAdminToast('Voucher deleted.');
+}
+
+// ── Tab switching ─────────────────────────────────────────────
+function switchTab(tab) {
+    document.querySelectorAll('.settings-tab').forEach((btn, i) => {
+        const panels = ['site','shipping','vouchers','notifications','maintenance'];
+        btn.classList.toggle('active', panels[i] === tab);
+    });
+    document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById('panel-' + tab);
+    if (target) target.classList.add('active');
+    if (tab === 'vouchers') renderVouchers();
+    if (tab === 'notifications') loadNotifSettings();
+}
+
+// ── Site settings ─────────────────────────────────────────────
+function saveSiteSettings() {
+    const settings = {
+        siteName: document.getElementById('siteName').value.trim() || 'Pet Prestige',
+        siteEmail: document.getElementById('siteEmail').value.trim() || 'hello@petprestige.ph',
+        sitePhone: document.getElementById('sitePhone').value.trim() || '+63 912 345 6789'
+    };
+    localStorage.setItem('petPrestigeSiteSettings', JSON.stringify(settings));
+    showAdminToast('Site settings saved!');
+}
+
+function saveShippingSettings() {
+    const settings = {
+        freeShippingThreshold: parseInt(document.getElementById('freeShippingThreshold').value) || 500,
+        flatShippingFee: parseInt(document.getElementById('flatShippingFee').value) || 80,
+        lowStockThreshold: parseInt(document.getElementById('lowStockThreshold').value) || 5,
+        enableVouchers: document.getElementById('enableVouchers').checked
+    };
+    localStorage.setItem('petPrestigeShippingSettings', JSON.stringify(settings));
+    showAdminToast('Shipping settings saved!');
+}
+
+// ── Maintenance ───────────────────────────────────────────────
+function clearCart()      { if(confirm('Clear ALL user carts?'))     { localStorage.removeItem('petPrestigeCart');    showAdminToast('Carts cleared!'); } }
+function clearOrders()    { if(confirm('Delete ALL orders?'))        { localStorage.removeItem('petPrestigeOrders');  showAdminToast('Orders deleted!'); } }
+function clearReviews()   { if(confirm('Delete ALL reviews?'))       { localStorage.removeItem('petPrestigeReviews'); localStorage.removeItem('petPrestigeAdminReplies'); showAdminToast('Reviews cleared!'); } }
+function clearLostFound() { if(confirm('Delete ALL L&F reports?'))   { localStorage.removeItem('petPrestigeLF');      showAdminToast('Reports cleared!'); } }
+
+function resetAllData() {
+    if (confirm('WARNING: This will DELETE ALL data and reset to factory state. Are you absolutely sure?')) {
+        ['petPrestigeCart','petPrestigeOrders','petPrestigeReviews','petPrestigeAdminReplies',
+         'petPrestigePosts','petPrestigeLF','petPrestigeCustomProducts','petPrestigeSiteSettings',
+         'petPrestigeShippingSettings','petPrestigeVoucherList','petPrestigeVouchersMap'].forEach(k => localStorage.removeItem(k));
+        showAdminToast('All data reset.');
+        setTimeout(() => window.location.reload(), 1200);
+    }
+}
+
+function showAdminToast(msg) {
+    if (typeof showToast === 'function') { showToast(msg); return; }
+    const t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:30px;right:30px;background:#333;color:white;padding:12px 22px;border-radius:10px;z-index:9999;font-size:0.9rem;';
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2500);
+}
+
+// ── Notification Settings ─────────────────────────────────────
+function loadNotifSettings() {
+    const s = JSON.parse(localStorage.getItem('petPrestigeNotifSettings') || '{}');
+    const emailEl = document.getElementById('notifAdminEmail');
+    if (emailEl) emailEl.value = s.adminEmail || '';
+}
+
+function getAdminEmail() {
+    const emailEl = document.getElementById('notifAdminEmail');
+    const val = emailEl ? emailEl.value.trim() : '';
+    if (val) {
+        const s = JSON.parse(localStorage.getItem('petPrestigeNotifSettings') || '{}');
+        s.adminEmail = val;
+        localStorage.setItem('petPrestigeNotifSettings', JSON.stringify(s));
+        return val;
+    }
+    const site = JSON.parse(localStorage.getItem('petPrestigeSiteSettings') || '{}');
+    return site.siteEmail || 'admin@petprestige.ph';
+}
+
+function buildSalesDigestText(period) {
+    const orders = JSON.parse(localStorage.getItem('petPrestigeOrders') || '[]');
+    const now = new Date();
+    let cutoff;
+    if (period === 'today') {
+        cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    } else if (period === 'week') {
+        cutoff = new Date(now - 7 * 86400000);
+    } else {
+        cutoff = new Date(now - 30 * 86400000);
+    }
+    const filtered = orders.filter(o => new Date(o.date) >= cutoff);
+    const revenue  = filtered.reduce((s, o) => s + (o.total || 0), 0);
+    const delivered = filtered.filter(o => o.status === 'delivered').length;
+    const pending   = filtered.filter(o => o.status === 'pending').length;
+    const periodLabel = period === 'today' ? 'Today' : period === 'week' ? 'Last 7 Days' : 'Last 30 Days';
+
+    // Top products
+    const prodMap = {};
+    filtered.forEach(o => (o.items||[]).forEach(i => {
+        prodMap[i.name] = (prodMap[i.name] || 0) + (i.price * i.quantity);
+    }));
+    const topProds = Object.entries(prodMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+    const lines = [
+        'PET PRESTIGE — SALES DIGEST',
+        'Period: ' + periodLabel,
+        'Generated: ' + now.toLocaleString('en-PH'),
+        '',
+        '─────────────────────────────',
+        'Total Orders:     ' + filtered.length,
+        'Total Revenue:    ₱' + revenue.toLocaleString(),
+        'Delivered:        ' + delivered,
+        'Pending:          ' + pending,
+        '─────────────────────────────',
+        '',
+        'TOP PRODUCTS BY REVENUE:',
+    ];
+    topProds.forEach((p, i) => lines.push((i+1) + '. ' + p[0] + ' — ₱' + p[1].toLocaleString()));
+    lines.push('', 'Sent from Pet Prestige Admin Panel');
+    return lines.join('\n');
+}
+
+function previewSalesDigest() {
+    const period = document.getElementById('salesDigestPeriod')?.value || 'week';
+    const text = buildSalesDigestText(period);
+    const preview = document.getElementById('salesDigestPreview');
+    if (preview) { preview.style.display = 'block'; preview.textContent = text; }
+}
+
+function sendSalesDigest() {
+    const period  = document.getElementById('salesDigestPeriod')?.value || 'week';
+    const email   = getAdminEmail();
+    const text    = buildSalesDigestText(period);
+    const subject = 'Pet Prestige Sales Digest — ' + (period === 'today' ? 'Today' : period === 'week' ? 'Last 7 Days' : 'Last 30 Days');
+    window.open('mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(text), '_blank');
+    ActivityLog.add('Sales digest sent', period + ' → ' + email, 'general');
+    adminToast('Email client opened for digest!', 'success');
+}
+
+function previewLowStock() {
+    const settings = JSON.parse(localStorage.getItem('petPrestigeShippingSettings') || '{}');
+    const threshold = settings.lowStockThreshold ?? 5;
+    let allProducts = [];
+    if (typeof DB !== 'undefined') allProducts = [...DB.products];
+    const custom = JSON.parse(localStorage.getItem('petPrestigeCustomProducts') || '[]');
+    // merge overrides
+    const overrideMap = {};
+    custom.forEach(p => overrideMap[p.id] = p);
+    allProducts = allProducts.map(p => overrideMap[p.id] || p);
+    const dbIds = new Set(allProducts.map(p => p.id));
+    custom.filter(p => !dbIds.has(p.id)).forEach(p => allProducts.push(p));
+
+    const low = allProducts.filter(p => p.stock !== undefined && p.stock <= threshold);
+    const preview = document.getElementById('lowStockPreview');
+    if (!preview) return;
+    if (!low.length) {
+        preview.style.display = 'block';
+        preview.innerHTML = '<span style="color:#27ae60;">✓ No products below threshold (' + threshold + ' units)</span>';
+        return;
+    }
+    preview.style.display = 'block';
+    preview.innerHTML = '<strong>⚠ ' + low.length + ' product(s) at or below ' + threshold + ' units:</strong><br><br>' +
+        low.map(p => '<span style="font-family:monospace;">' + p.name + ' — <strong style="color:#e74c3c;">' + p.stock + ' left</strong></span>').join('<br>');
+}
+
+function sendLowStockAlert() {
+    const settings = JSON.parse(localStorage.getItem('petPrestigeShippingSettings') || '{}');
+    const threshold = settings.lowStockThreshold ?? 5;
+    let allProducts = [];
+    if (typeof DB !== 'undefined') allProducts = [...DB.products];
+    const custom = JSON.parse(localStorage.getItem('petPrestigeCustomProducts') || '[]');
+    const overrideMap = {};
+    custom.forEach(p => overrideMap[p.id] = p);
+    allProducts = allProducts.map(p => overrideMap[p.id] || p);
+    const dbIds = new Set(allProducts.map(p => p.id));
+    custom.filter(p => !dbIds.has(p.id)).forEach(p => allProducts.push(p));
+    const low = allProducts.filter(p => p.stock !== undefined && p.stock <= threshold);
+
+    if (!low.length) { adminToast('No products below the low stock threshold!', 'info'); return; }
+
+    const email = getAdminEmail();
+    const subject = 'Pet Prestige — Restock Alert: ' + low.length + ' Product(s) Low';
+    const lines = [
+        'PET PRESTIGE — INVENTORY RESTOCK ALERT',
+        'Generated: ' + new Date().toLocaleString('en-PH'),
+        'Threshold: ' + threshold + ' units',
+        '',
+        low.length + ' product(s) need restocking:',
+        '',
+    ];
+    low.forEach(p => lines.push('• ' + p.name + ' — ' + p.stock + ' unit(s) remaining'));
+    lines.push('', 'Please restock these items as soon as possible.', '', '— Pet Prestige Admin Panel');
+    window.open('mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n')), '_blank');
+    ActivityLog.add('Restock alert sent', low.length + ' products → ' + email, 'general');
+    adminToast('Restock alert email opened!', 'success');
+}
+
+function logoutAdmin() {
+    if (confirm('Logout from admin panel?')) {
+        localStorage.removeItem('petPrestigeAdminSession');
+        localStorage.removeItem('petPrestigeUser');
+        window.location.href = '../login.html?logout=1';
+    }
+}
+
+// ── Load saved settings on init ───────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+    const site = JSON.parse(localStorage.getItem('petPrestigeSiteSettings') || '{}');
+    document.getElementById('siteName').value  = site.siteName  || 'Pet Prestige';
+    document.getElementById('siteEmail').value = site.siteEmail || 'hello@petprestige.ph';
+    document.getElementById('sitePhone').value = site.sitePhone || '+63 912 345 6789';
+
+    const shipping = JSON.parse(localStorage.getItem('petPrestigeShippingSettings') || '{}');
+    document.getElementById('freeShippingThreshold').value = shipping.freeShippingThreshold || 500;
+    document.getElementById('flatShippingFee').value       = shipping.flatShippingFee || 80;
+    document.getElementById('lowStockThreshold').value     = shipping.lowStockThreshold || 5;
+    document.getElementById('enableVouchers').checked      = shipping.enableVouchers !== false;
+
+    // Init default vouchers if none stored
+    getVouchers();
+    loadNotifSettings();
+});
+</script>
+</body>
+</html>

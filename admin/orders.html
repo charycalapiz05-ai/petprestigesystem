@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders - Pet Prestige Admin</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="admin-body" data-admin-page="true">
+<script src="../js/admin-guard.js"></script>
+<div class="admin-wrapper">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="admin-logo" style="padding:20px 16px;">
+            <a href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+                <img src="../images/logo-pet-prestige.png" alt="Pet Prestige" class="logo-img-main" style="height:54px;"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div class="logo-fallback" style="display:none;align-items:center;gap:8px;">
+                    <div class="logo-icon" style="font-size:1.6rem;">🐾</div>
+                    <div class="logo-text">
+                        <span class="logo-main" style="color:white;font-size:1rem;">Pet Prestige</span>
+                        <span class="logo-tagline" style="color:rgba(255,255,255,0.7);font-size:0.72rem;display:block;">Admin Panel</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <nav class="admin-nav">
+            <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="products.html"><i class="fas fa-box"></i> Products</a>
+            <a href="orders.html" class="active"><i class="fas fa-shopping-bag"></i> Orders <span class="badge" id="pendingBadge">0</span></a>
+            <a href="customers.html"><i class="fas fa-users"></i> Customers</a>
+            <a href="reviews.html"><i class="fas fa-star"></i> Reviews</a>
+            <a href="lost-found-admin.html"><i class="fas fa-paw"></i> Lost & Found</a>
+            <a href="community-admin.html"><i class="fas fa-comments"></i> Community</a>
+            <a href="reports.html"><i class="fas fa-chart-bar"></i> Reports</a>
+            <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+        </nav>
+
+        <div class="admin-sidebar-bottom">
+            <a href="../index.html" target="_blank"><i class="fas fa-store"></i> View Store</a>
+            <a href="#" onclick="logoutAdmin()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <header class="admin-header">
+            <h1>Manage Orders</h1>
+            <div class="admin-actions">
+                <button class="btn btn-outline" onclick="exportOrders('csv')">
+                    <i class="fas fa-file-csv"></i> CSV
+                </button>
+                <button class="btn btn-outline" onclick="exportOrders('excel')" style="color:#1d6f42;border-color:#1d6f42;">
+                    <i class="fas fa-file-excel"></i> Excel
+                </button>
+                <select id="statusFilter" onchange="renderOrders()">
+                    <option value="all">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <div class="admin-card">
+                <div class="card-header">
+                    <h3>Orders List (<span id="orderCount">0</span>)</h3>
+                </div>
+
+                <div id="bulkActionBar" style="display:none; padding:12px 16px; background:#fff8f5; border:1.5px solid #ffe0d0; border-radius:10px; margin-bottom:16px; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <span id="bulkSelectedCount" style="font-size:0.88rem; color:#555; font-weight:600;">0 selected</span>
+                    <select id="bulkStatusSelect" style="padding:7px 12px; border:1.5px solid #ddd; border-radius:8px; font-family:inherit; font-size:0.88rem; outline:none;">
+                        <option value="">Change status to...</option>
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                    <button class="btn btn-primary btn-sm" onclick="applyBulkStatus()"><i class="fas fa-check"></i> Apply</button>
+                    <button class="btn btn-outline btn-sm" onclick="clearOrderSelection()">Clear selection</button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th style="width:36px;"><input type="checkbox" id="selectAllOrders" onclick="toggleSelectAllOrders(this)" title="Select all"></th>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Payment</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Order Details Modal -->
+    <div class="modal" id="orderDetailModal" style="display:none;">
+        <div class="modal-content" style="max-width:700px;">
+            <button class="modal-close" onclick="closeOrderModal()">×</button>
+            <h2>Order Details</h2>
+            <div id="orderDetailContent"></div>
+        </div>
+    </div>
+</div>
+
+<script src="../js/admin-common.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/script.js"></script>
+<script src="../js/api-bridge.js"></script> <script>
+// Mock helper to get orders from localStorage
+function getOrders() {
+    return JSON.parse(localStorage.getItem('petPrestigeOrders') || '[]');
+}
+
+function renderOrders() {
+    const orders = getOrders();
+    const filter = document.getElementById('statusFilter')?.value || 'all';
+    const table = document.getElementById('ordersTable');
+    const countEl = document.getElementById('orderCount');
+    const pendingBadge = document.getElementById('pendingBadge');
+
+    let filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
+
+    countEl.textContent = filtered.length;
+    pendingBadge.textContent = orders.filter(o => o.status === 'pending').length;
+
+    table.innerHTML = filtered.length ? filtered.map(o => `
+        <tr>
+            <td><input type="checkbox" class="order-checkbox" value="${o.id}" onchange="updateBulkBar()"></td>
+            <td><strong>${o.id}</strong></td>
+            <td>${o.shippingInfo?.firstName || ''} ${o.shippingInfo?.lastName || ''}</td>
+            <td>${o.items?.length || 0}</td>
+            <td>₱${(o.total || 0).toLocaleString()}</td>
+            <td>${o.paymentInfo?.method || 'COD'}</td>
+            <td><span class="status-badge ${o.status}">${o.status}</span></td>
+            <td>${new Date(o.date).toLocaleDateString()}</td>
+            <td>
+                <button class="btn btn-sm btn-primary" onclick="viewOrder('${o.id}')">View</button>
+                <button class="btn btn-sm btn-outline" onclick="adminPrintInvoice('${o.id}')" title="Print Invoice"><i class="fas fa-print"></i></button>
+            </td>
+        </tr>
+    `).join('') : '<tr><td colspan="9" style="text-align:center;padding:40px;color:#aaa;">No orders found.</td></tr>';
+}
+
+function viewOrder(orderId) {
+    const orders = getOrders();
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    const content = document.getElementById('orderDetailContent');
+    content.innerHTML = `
+        <div style="margin-bottom:20px;">
+            <strong>Order ID:</strong> ${order.id}<br>
+            <strong>Date:</strong> ${new Date(order.date).toLocaleString()}<br>
+            <strong>Status:</strong> 
+            <select id="modalStatusSelect">
+                <option value="pending" ${order.status==='pending'?'selected':''}>Pending</option>
+                <option value="processing" ${order.status==='processing'?'selected':''}>Processing</option>
+                <option value="shipped" ${order.status==='shipped'?'selected':''}>Shipped</option>
+                <option value="delivered" ${order.status==='delivered'?'selected':''}>Delivered</option>
+                <option value="cancelled" ${order.status==='cancelled'?'selected':''}>Cancelled</option>
+            </select>
+            <button class="btn btn-primary" style="margin-left:10px;" onclick="updateOrderStatus('${order.id}', document.getElementById('modalStatusSelect').value)">Update</button>
+        </div>
+
+        <h4>Customer Information</h4>
+        <p>
+            ${order.shippingInfo?.firstName || ''} ${order.shippingInfo?.lastName || ''}<br>
+            ${order.shippingInfo?.phone || ''}<br>
+            ${order.shippingInfo?.email || ''}<br>
+            ${order.shippingInfo?.address || ''}, ${order.shippingInfo?.city || ''}, ${order.shippingInfo?.province || ''} ${order.shippingInfo?.postal || ''}
+        </p>
+
+        <h4>Order Items</h4>
+        <table class="admin-table" style="width:100%;">
+            <thead>
+                <tr><th>Product</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+            </thead>
+            <tbody>
+                ${order.items?.map(item => `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.quantity}</td>
+                        <td>₱${item.price.toLocaleString()}</td>
+                        <td>₱${(item.price * item.quantity).toLocaleString()}</td>
+                    </tr>
+                `).join('') || '<tr><td colspan="4">No items</td></tr>'}
+            </tbody>
+        </table>
+
+        <div style="margin-top:20px; text-align:right;">
+            <strong>Subtotal:</strong> ₱${(order.subtotal || 0).toLocaleString()}<br>
+            <strong>Shipping:</strong> ₱${(order.shippingCost || 80).toLocaleString()}<br>
+            ${order.discount ? `<strong>Discount:</strong> -₱${order.discount.toLocaleString()}<br>` : ''}
+            <strong style="font-size:1.2rem;">Total:</strong> ₱${(order.total || 0).toLocaleString()}
+        </div>
+    `;
+
+    document.getElementById('orderDetailModal').style.display = 'flex';
+}
+
+function updateOrderStatus(orderId, newStatus) {
+    let orders = getOrders();
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+        const prevStatus = order.status;
+        order.status = newStatus;
+        localStorage.setItem('petPrestigeOrders', JSON.stringify(orders));
+        showToast('Order status updated to ' + newStatus);
+        ActivityLog.add('Order status changed', order.id + ' → ' + newStatus, 'orders');
+        closeOrderModal();
+        renderOrders();
+        if ((newStatus === 'shipped' || newStatus === 'delivered') && prevStatus !== newStatus) {
+            sendOrderStatusNotification(order, newStatus);
+        }
+    }
+}
+
+function closeOrderModal() {
+    document.getElementById('orderDetailModal').style.display = 'none';
+}
+
+function exportOrders(format) {
+    format = format || 'csv';
+    const orders = getOrders();
+    if (!orders.length) { adminToast('No orders to export.', 'warning'); return; }
+
+    const headers = ['Order ID','Customer','Phone','Email','Address','City','Province','Items','Subtotal','Shipping','Discount','Total','Payment','Status','Date'];
+    const rows = orders.map(o => [
+        o.id,
+        (o.shippingInfo?.firstName || '') + ' ' + (o.shippingInfo?.lastName || ''),
+        o.shippingInfo?.phone || '',
+        o.shippingInfo?.email || '',
+        o.shippingInfo?.address || '',
+        o.shippingInfo?.city || '',
+        o.shippingInfo?.province || '',
+        (o.items||[]).map(i => i.name + ' x' + i.quantity).join(' | '),
+        o.subtotal || 0,
+        o.shippingCost || 0,
+        o.discount || 0,
+        o.total || 0,
+        o.paymentInfo?.method || 'COD',
+        o.status,
+        new Date(o.date).toLocaleDateString('en-PH')
+    ]);
+
+    if (format === 'excel') {
+        // Build Excel XML (SpreadsheetML) — opens natively in Excel
+        const xmlRows = [headers, ...rows].map(row =>
+            '<Row>' + row.map(cell =>
+                '<Cell><Data ss:Type="' + (typeof cell === 'number' ? 'Number' : 'String') + '">' +
+                String(cell).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') +
+                '</Data></Cell>'
+            ).join('') + '</Row>'
+        ).join('');
+
+        const xml = [
+            '<?xml version="1.0" encoding="UTF-8"?>',
+            '<?mso-application progid="Excel.Sheet"?>',
+            '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"',
+            '  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">',
+            '<Styles><Style ss:ID="h"><Font ss:Bold="1"/><Interior ss:Color="#FF6B35" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>',
+            '<Worksheet ss:Name="Orders"><Table>',
+            '<Row>' + headers.map(h => '<Cell ss:StyleID="h"><Data ss:Type="String">' + h + '</Data></Cell>').join('') + '</Row>',
+            rows.map(row =>
+                '<Row>' + row.map(cell =>
+                    '<Cell><Data ss:Type="' + (typeof cell === 'number' ? 'Number' : 'String') + '">' +
+                    String(cell).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') +
+                    '</Data></Cell>'
+                ).join('') + '</Row>'
+            ).join(''),
+            '</Table></Worksheet></Workbook>'
+        ].join('\n');
+
+        const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'petprestige_orders.xls'; a.click();
+        URL.revokeObjectURL(url);
+        ActivityLog.add('Orders exported', 'Excel format, ' + orders.length + ' orders', 'orders');
+        adminToast('Orders exported as Excel! ✓', 'success');
+    } else {
+        const csv = [headers, ...rows].map(row => row.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'petprestige_orders.csv'; a.click();
+        URL.revokeObjectURL(url);
+        ActivityLog.add('Orders exported', 'CSV format, ' + orders.length + ' orders', 'orders');
+        adminToast('Orders exported as CSV! ✓', 'success');
+    }
+}
+
+function adminPrintInvoice(orderId) {
+    if (typeof printInvoice === 'function') {
+        printInvoice(orderId);
+    } else {
+        alert('Print function not available. Make sure script.js is loaded.');
+    }
+}
+
+function showToast(msg) {
+    if (typeof window.showToast === 'function' && window.showToast !== showToast) {
+        window.showToast(msg);
+    } else {
+        const t = document.createElement('div');
+        t.textContent = msg;
+        t.style.cssText = 'position:fixed;bottom:30px;right:30px;background:#333;color:white;padding:12px 22px;border-radius:10px;z-index:9999;font-size:0.9rem;box-shadow:0 4px 12px rgba(0,0,0,0.2);';
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 3000);
+    }
+}
+
+function logoutAdmin() {
+    if (confirm('Logout from admin panel?')) {
+        localStorage.removeItem('petPrestigeAdminSession');
+        localStorage.removeItem('petPrestigeUser');
+        window.location.href = '../login.html?logout=1';
+    }
+}
+
+// ── Bulk order selection ──────────────────────────────────────────
+function toggleSelectAllOrders(cb) {
+    document.querySelectorAll('.order-checkbox').forEach(c => c.checked = cb.checked);
+    updateBulkBar();
+}
+
+function updateBulkBar() {
+    const checked = document.querySelectorAll('.order-checkbox:checked');
+    const bar = document.getElementById('bulkActionBar');
+    const countEl = document.getElementById('bulkSelectedCount');
+    if (!bar) return;
+    if (checked.length > 0) {
+        bar.style.display = 'flex';
+        countEl.textContent = checked.length + ' order' + (checked.length !== 1 ? 's' : '') + ' selected';
+    } else {
+        bar.style.display = 'none';
+    }
+    const all = document.querySelectorAll('.order-checkbox');
+    const sa = document.getElementById('selectAllOrders');
+    if (sa) {
+        sa.checked = all.length > 0 && checked.length === all.length;
+        sa.indeterminate = checked.length > 0 && checked.length < all.length;
+    }
+}
+
+function clearOrderSelection() {
+    document.querySelectorAll('.order-checkbox').forEach(c => c.checked = false);
+    const sa = document.getElementById('selectAllOrders');
+    if (sa) { sa.checked = false; sa.indeterminate = false; }
+    updateBulkBar();
+}
+
+function applyBulkStatus() {
+    const newStatus = document.getElementById('bulkStatusSelect')?.value;
+    if (!newStatus) { alert('Please select a status to apply.'); return; }
+    const ids = [...document.querySelectorAll('.order-checkbox:checked')].map(c => c.value);
+    if (!ids.length) return;
+    if (!confirm('Change ' + ids.length + ' order(s) to "' + newStatus + '"?')) return;
+    let orders = getOrders();
+    orders.forEach(o => {
+        if (ids.includes(o.id)) {
+            const prev = o.status;
+            o.status = newStatus;
+            if ((newStatus === 'shipped' || newStatus === 'delivered') && prev !== newStatus) {
+                sendOrderStatusNotification(o, newStatus);
+            }
+        }
+    });
+    localStorage.setItem('petPrestigeOrders', JSON.stringify(orders));
+    showToast(ids.length + ' order(s) updated to ' + newStatus);
+    renderOrders();
+    clearOrderSelection();
+}
+
+// ── Order status email notification ──────────────────────────────
+function sendOrderStatusNotification(order, status) {
+    const email = order.shippingInfo?.email || '';
+    const name  = order.shippingInfo?.firstName || 'Customer';
+    const items = (order.items || []).map(i => i.name + ' x' + i.quantity).join(', ');
+    const addr  = (order.shippingInfo?.address || '') + ', ' + (order.shippingInfo?.city || '');
+    const total = '₱' + (order.total || 0).toLocaleString();
+
+    const subjects = {
+        shipped:   'Your Pet Prestige order ' + order.id + ' has been shipped!',
+        delivered: 'Your Pet Prestige order ' + order.id + ' has been delivered!'
+    };
+    const bodies = {
+        shipped: [
+            'Hi ' + name + ',',
+            '',
+            'Great news! Your Pet Prestige order ' + order.id + ' is now on its way to you.',
+            '',
+            'Items: ' + items,
+            'Delivering to: ' + addr,
+            'Total: ' + total,
+            '',
+            'Estimated delivery: 1-3 business days.',
+            'Questions? Email hello@petprestige.ph or call +63 912 345 6789.',
+            '',
+            'With love,',
+            'Pet Prestige Team'
+        ].join('\n'),
+        delivered: [
+            'Hi ' + name + ',',
+            '',
+            'Your Pet Prestige order ' + order.id + ' has been delivered. We hope your pet loves it!',
+            '',
+            'If you did not receive your order, contact us at hello@petprestige.ph or +63 912 345 6789.',
+            'Leave a review on your Profile page - we would love your feedback!',
+            '',
+            'With love,',
+            'Pet Prestige Team'
+        ].join('\n')
+    };
+
+    const subject = subjects[status];
+    const body    = bodies[status];
+    if (!subject) return;
+
+    // Save in-app notification
+    const notifs = JSON.parse(localStorage.getItem('petPrestigeNotifications') || '[]');
+    notifs.push({
+        id: Date.now(),
+        orderId: order.id,
+        email: email,
+        status: status,
+        subject: subject,
+        body: body,
+        sentAt: new Date().toISOString(),
+        read: false
+    });
+    localStorage.setItem('petPrestigeNotifications', JSON.stringify(notifs));
+
+    if (!email) {
+        showToast('Notification saved (no email on file for this order).');
+        return;
+    }
+
+    const mailtoLink = 'mailto:' + encodeURIComponent(email)
+        + '?subject=' + encodeURIComponent(subject)
+        + '&body='    + encodeURIComponent(body);
+
+    const icon = status === 'shipped' ? '\uD83D\uDE9A' : '\u2705';
+    if (confirm(icon + ' Send email notification to ' + email + '?' + '\n\n' + 'Subject: ' + subject + '\n\n' + 'Click OK to open your email client, or Cancel to save silently.')) {
+        window.open(mailtoLink, '_blank');
+    }
+    showToast(icon + ' Notification saved for ' + email);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    renderOrders();
+});
+</script>
+</body>
+</html>

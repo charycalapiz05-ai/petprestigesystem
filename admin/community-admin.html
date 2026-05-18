@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Moderation - Pet Prestige Admin</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .post-preview-card {
+            background: white;
+            border: 1.5px solid #eee;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: box-shadow 0.2s;
+        }
+        .post-preview-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+        .post-preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .post-author-info { display: flex; align-items: center; gap: 10px; }
+        .post-avatar-admin {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--primary); color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.95rem; flex-shrink: 0;
+        }
+        .post-meta-admin { font-size: 0.82rem; color: #aaa; }
+        .post-actions-admin { display: flex; gap: 8px; flex-shrink: 0; }
+        .topic-chip {
+            display: inline-block; padding: 2px 10px; border-radius: 12px;
+            font-size: 0.75rem; font-weight: 600; text-transform: capitalize;
+            background: #fff3ec; color: var(--primary); margin-bottom: 6px;
+        }
+        .post-content-preview { color: #555; font-size: 0.9rem; line-height: 1.6; margin: 6px 0 0; }
+        .post-image-thumb {
+            width: 80px; height: 60px; object-fit: cover;
+            border-radius: 8px; margin-top: 10px;
+        }
+        .post-stats { display: flex; gap: 16px; margin-top: 10px; font-size: 0.82rem; color: #aaa; }
+        .comment-preview {
+            background: #f8f9fa; border-radius: 8px; padding: 10px 14px;
+            margin-top: 8px; font-size: 0.85rem;
+        }
+        .comment-preview strong { color: #333; }
+        .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; }
+    </style>
+</head>
+<body class="admin-body" data-admin-page="true">
+<script src="../js/admin-guard.js"></script>
+<div class="admin-wrapper">
+    <aside class="admin-sidebar">
+        <div class="admin-logo" style="padding:20px 16px;">
+            <a href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+                <img src="../images/logo-pet-prestige.png" alt="Pet Prestige" class="logo-img-main" style="height:54px;"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div class="logo-fallback" style="display:none;align-items:center;gap:8px;">
+                    <div class="logo-icon" style="font-size:1.6rem;">🐾</div>
+                    <div class="logo-text">
+                        <span class="logo-main" style="color:white;font-size:1rem;">Pet Prestige</span>
+                        <span class="logo-tagline" style="color:rgba(255,255,255,0.7);font-size:0.72rem;display:block;">Admin Panel</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <nav class="admin-nav">
+            <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="products.html"><i class="fas fa-box"></i> Products</a>
+            <a href="orders.html"><i class="fas fa-shopping-bag"></i> Orders</a>
+            <a href="customers.html"><i class="fas fa-users"></i> Customers</a>
+            <a href="reviews.html"><i class="fas fa-star"></i> Reviews</a>
+            <a href="lost-found-admin.html"><i class="fas fa-paw"></i> Lost & Found</a>
+            <a href="community-admin.html" class="active"><i class="fas fa-comments"></i> Community</a>
+            <a href="reports.html"><i class="fas fa-chart-bar"></i> Reports</a>
+            <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+        </nav>
+        <div class="admin-sidebar-bottom">
+            <a href="../index.html" target="_blank"><i class="fas fa-store"></i> View Store</a>
+            <a href="#" onclick="logoutAdmin()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <h1>Community Moderation</h1>
+            <div class="admin-actions">
+                <span id="postStats" style="color:#888;font-size:0.88rem;"></span>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <div class="admin-card">
+                <div class="filter-bar">
+                    <input type="text" id="postSearch" placeholder="Search posts, authors..." oninput="renderAdminPosts()" style="padding:8px 14px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:0.88rem;outline:none;min-width:220px;">
+                    <select id="topicFilter" onchange="renderAdminPosts()" style="padding:8px 14px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:0.88rem;outline:none;">
+                        <option value="all">All Topics</option>
+                        <option value="dogs">Dogs</option>
+                        <option value="cats">Cats</option>
+                        <option value="birds">Birds</option>
+                        <option value="fish">Fish</option>
+                        <option value="small-pets">Small Pets</option>
+                        <option value="health">Health & Care</option>
+                        <option value="general">General</option>
+                        <option value="adoption">Adoption</option>
+                    </select>
+                    <select id="sortFilter" onchange="renderAdminPosts()" style="padding:8px 14px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:0.88rem;outline:none;">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="most-liked">Most Liked</option>
+                        <option value="most-comments">Most Comments</option>
+                    </select>
+                    <button onclick="clearAllPosts()" class="btn btn-danger btn-sm" style="margin-left:auto;">
+                        <i class="fas fa-trash"></i> Clear All Posts
+                    </button>
+                </div>
+
+                <div id="adminPostsFeed"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Post Detail Modal -->
+    <div class="modal" id="postDetailModal" style="display:none;">
+        <div class="modal-content" style="max-width:680px;max-height:85vh;overflow-y:auto;">
+            <button class="modal-close" onclick="closePostDetail()">×</button>
+            <h2>Post Details</h2>
+            <div id="postDetailContent"></div>
+        </div>
+    </div>
+</div>
+
+<script src="../js/admin-common.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/script.js"></script>
+<script src="../js/api-bridge.js"></script> <script>
+    function getPosts() {
+        return JSON.parse(localStorage.getItem('petPrestigePosts') || '[]');
+    }
+
+    function savePosts(posts) {
+        localStorage.setItem('petPrestigePosts', JSON.stringify(posts));
+    }
+
+    function renderAdminPosts() {
+        let posts = getPosts();
+        const search = document.getElementById('postSearch')?.value?.toLowerCase() || '';
+        const topic  = document.getElementById('topicFilter')?.value || 'all';
+        const sort   = document.getElementById('sortFilter')?.value || 'newest';
+
+        // Filter
+        if (search) posts = posts.filter(p =>
+            p.title?.toLowerCase().includes(search) ||
+            p.content?.toLowerCase().includes(search) ||
+            p.author?.toLowerCase().includes(search)
+        );
+        if (topic !== 'all') posts = posts.filter(p => p.topic === topic);
+
+        // Sort
+        if (sort === 'newest')        posts.sort((a,b) => b.id - a.id);
+        if (sort === 'oldest')        posts.sort((a,b) => a.id - b.id);
+        if (sort === 'most-liked')    posts.sort((a,b) => (b.likes||0) - (a.likes||0));
+        if (sort === 'most-comments') posts.sort((a,b) => (b.comments?.length||0) - (a.comments?.length||0));
+
+        // Stats
+        const allPosts = getPosts();
+        const statsEl = document.getElementById('postStats');
+        if (statsEl) statsEl.textContent = `${allPosts.length} total posts · ${posts.length} shown`;
+
+        const feed = document.getElementById('adminPostsFeed');
+        if (!feed) return;
+
+        feed.innerHTML = posts.length ? posts.map(p => `
+            <div class="post-preview-card" id="adminPost_${p.id}">
+                <div class="post-preview-header">
+                    <div class="post-author-info">
+                        <div class="post-avatar-admin">${(p.author||'?').charAt(0).toUpperCase()}</div>
+                        <div>
+                            <div style="font-weight:600;font-size:0.92rem;">${p.author || 'Unknown'}</div>
+                            <div class="post-meta-admin">${p.time || ''}</div>
+                        </div>
+                    </div>
+                    <div class="post-actions-admin">
+                        <button class="btn btn-sm btn-primary" onclick="viewPostDetail(${p.id})">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteAdminPost(${p.id})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <span class="topic-chip">${p.topic || 'general'}</span>
+                    <h4 style="margin:0 0 4px;font-size:0.95rem;">${p.title || ''}</h4>
+                    <p class="post-content-preview">${(p.content||'').substring(0,180)}${(p.content||'').length > 180 ? '...' : ''}</p>
+                    ${p.image ? `<img src="${p.image}" class="post-image-thumb" onerror="this.remove()">` : ''}
+                </div>
+                <div class="post-stats">
+                    <span><i class="fas fa-heart" style="color:#e74c3c;"></i> ${p.likes || 0}</span>
+                    <span><i class="fas fa-comment" style="color:#3498db;"></i> ${(p.comments||[]).length}</span>
+                    ${(p.comments||[]).length > 0 ? `
+                    <span style="margin-left:4px;color:#888;">Latest: <em>${(p.comments[0]?.author || '')} — "${(p.comments[0]?.text||'').substring(0,40)}..."</em></span>` : ''}
+                </div>
+            </div>`).join('')
+            : '<p style="text-align:center;padding:60px;color:#aaa;">No posts found.</p>';
+    }
+
+    function deleteAdminPost(postId) {
+        if (!confirm('Permanently delete this post and all its comments?')) return;
+        let posts = getPosts().filter(p => p.id !== postId);
+        savePosts(posts);
+        // Also update communityPosts in script.js if loaded
+        if (typeof communityPosts !== 'undefined') {
+            communityPosts.splice(0, communityPosts.length, ...posts);
+        }
+        renderAdminPosts();
+        showAdminToast('Post deleted.');
+    }
+
+    function deleteAdminComment(postId, commentId) {
+        let posts = getPosts();
+        const post = posts.find(p => p.id === postId);
+        if (!post) return;
+        post.comments = (post.comments||[]).filter(c => String(c.id) !== String(commentId));
+        savePosts(posts);
+        viewPostDetail(postId); // refresh modal
+        renderAdminPosts();
+        showAdminToast('Comment deleted.');
+    }
+
+    function viewPostDetail(postId) {
+        const posts = getPosts();
+        const post = posts.find(p => p.id === postId);
+        if (!post) return;
+
+        const content = document.getElementById('postDetailContent');
+        content.innerHTML = `
+            <div style="margin-bottom:16px;">
+                <span class="topic-chip">${post.topic || 'general'}</span>
+                <h3 style="margin:8px 0 4px;">${post.title}</h3>
+                <div style="color:#aaa;font-size:0.82rem;">By <strong>${post.author}</strong> · ${post.time}</div>
+            </div>
+            ${post.image ? `<img src="${post.image}" style="width:100%;border-radius:10px;margin-bottom:16px;" onerror="this.remove()">` : ''}
+            <p style="color:#555;line-height:1.8;margin-bottom:20px;">${post.content}</p>
+            <div style="display:flex;gap:16px;padding:12px;background:#f8f9fa;border-radius:8px;margin-bottom:20px;font-size:0.88rem;">
+                <span><i class="fas fa-heart" style="color:#e74c3c;"></i> ${post.likes || 0} likes</span>
+                <span><i class="fas fa-comment" style="color:#3498db;"></i> ${(post.comments||[]).length} comments</span>
+            </div>
+
+            <h4 style="margin-bottom:12px;">Comments (${(post.comments||[]).length})</h4>
+            ${(post.comments||[]).length ? post.comments.map(c => `
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;background:#f8f9fa;border-radius:8px;padding:10px 14px;margin-bottom:8px;">
+                    <div>
+                        <strong style="font-size:0.88rem;">${c.author}</strong>
+                        <span style="color:#aaa;font-size:0.78rem;margin-left:8px;">${c.time}</span>
+                        <p style="margin:4px 0 0;font-size:0.88rem;color:#555;">${c.text}</p>
+                    </div>
+                    <button onclick="deleteAdminComment(${post.id},'${c.id}')"
+                        style="background:none;border:none;color:#e74c3c;cursor:pointer;font-size:0.9rem;flex-shrink:0;padding:4px 8px;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>`).join('')
+            : '<p style="color:#aaa;text-align:center;padding:20px;">No comments.</p>'}
+
+            <div style="margin-top:20px;padding-top:16px;border-top:1px solid #eee;">
+                <button class="btn btn-danger" onclick="deleteAdminPost(${post.id});closePostDetail();">
+                    <i class="fas fa-trash"></i> Delete Entire Post
+                </button>
+            </div>`;
+
+        document.getElementById('postDetailModal').style.display = 'flex';
+    }
+
+    function closePostDetail() {
+        document.getElementById('postDetailModal').style.display = 'none';
+    }
+
+    function clearAllPosts() {
+        if (!confirm('Delete ALL community posts? This cannot be undone.')) return;
+        savePosts([]);
+        renderAdminPosts();
+        showAdminToast('All posts deleted.');
+    }
+
+    function showAdminToast(msg) {
+        if (typeof showToast === 'function') { showToast(msg); return; }
+        const t = document.createElement('div');
+        t.textContent = msg;
+        t.style.cssText = 'position:fixed;bottom:30px;right:30px;background:#333;color:white;padding:12px 22px;border-radius:10px;z-index:9999;font-size:0.9rem;';
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2500);
+    }
+
+    function logoutAdmin() {
+        if (confirm('Logout from admin panel?')) {
+            localStorage.removeItem('petPrestigeAdminSession');
+            localStorage.removeItem('petPrestigeUser');
+            window.location.href = '../login.html?logout=1';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', renderAdminPosts);
+</script>
+</body>
+</html>

@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Pet Prestige</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar simple">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <img src="images/logo-pet-prestige.png" alt="Pet Prestige" class="logo-img-main">
+            </a>
+        </div>
+    </nav>
+
+    <section class="checkout-section">
+        <div class="container">
+            <div class="checkout-steps">
+                <div class="step active"><div class="step-number">1</div><span>Shipping</span></div>
+                <div class="step-line"></div>
+                <div class="step"><div class="step-number">2</div><span>Payment</span></div>
+                <div class="step-line"></div>
+                <div class="step"><div class="step-number">3</div><span>Confirm</span></div>
+            </div>
+
+            <div class="checkout-layout">
+                <div class="checkout-main">
+                    <!-- Shipping -->
+                    <div class="checkout-box" id="shippingBox">
+                        <h2>Shipping Information</h2>
+
+                        <!-- Saved Address Selector -->
+                        <div id="savedAddressBar" style="display:none; margin-bottom:20px; padding:14px 16px; background:#fff8f5; border:1.5px solid #ffe0d0; border-radius:12px;">
+                            <label style="font-size:0.88rem; font-weight:600; color:#555; display:block; margin-bottom:8px;">
+                                <i class="fas fa-map-marker-alt" style="color:var(--primary);"></i> Use a saved address
+                            </label>
+                            <select id="savedAddressSelect" onchange="applySavedAddress()" style="width:100%;padding:9px 12px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:0.9rem;outline:none;background:white;">
+                                <option value="">— Select a saved address —</option>
+                            </select>
+                        </div>
+
+                        <form id="shippingForm">
+                            <div class="form-row">
+                                <div class="form-group"><label>First Name *</label><input type="text" id="firstName" required></div>
+                                <div class="form-group"><label>Last Name *</label><input type="text" id="lastName" required></div>
+                            </div>
+                            <div class="form-group"><label>Phone Number *</label><input type="tel" id="phone" required></div>
+                            <div class="form-group"><label>Email *</label><input type="email" id="email" required></div>
+                            <div class="form-group"><label>Complete Address *</label><input type="text" id="address" required placeholder="House no., Street, Barangay"></div>
+                            <div class="form-row">
+                                <div class="form-group"><label>City *</label><input type="text" id="city" required></div>
+                                <div class="form-group"><label>Province *</label><input type="text" id="province" required></div>
+                            </div>
+                            <div class="form-group"><label>Postal Code *</label><input type="text" id="postal" required></div>
+                            <!-- Loyalty Points Redemption -->
+                            <div id="loyaltySection" style="display:none;background:linear-gradient(135deg,#fff8f0,#fff3ec);border:1.5px solid #ffd0b3;border-radius:12px;padding:16px;margin-bottom:16px;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                                    <div>
+                                        <div style="font-weight:700;font-size:0.9rem;margin-bottom:2px;">&#127381; Use Loyalty Points</div>
+                                        <div style="font-size:0.82rem;color:#888;">You have <strong id="loyaltyPointsDisplay">0</strong> pts = <strong id="loyaltyWorthDisplay">₱0</strong></div>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <input type="number" id="loyaltyRedeemInput" placeholder="Points to redeem"
+                                               min="0" style="width:130px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:0.88rem;outline:none;"
+                                               oninput="previewLoyaltyRedeem()">
+                                        <button type="button" onclick="applyLoyaltyPoints()" class="btn btn-sm btn-primary">Apply</button>
+                                    </div>
+                                </div>
+                                <div id="loyaltyRedeemMsg" style="margin-top:8px;font-size:0.82rem;color:#27ae60;display:none;"></div>
+                            </div>
+
+                            <!-- Subscription Toggle -->
+                            <div id="subscriptionToggleWrap" style="background:linear-gradient(135deg,#f0f9ff,#e8f4fd);border:1.5px solid #b3d9f5;border-radius:12px;padding:16px;margin-bottom:16px;">
+                                <div style="display:flex;align-items:flex-start;gap:14px;">
+                                    <label class="sub-toggle-switch">
+                                        <input type="checkbox" id="subscribeToggle" onchange="toggleSubscriptionOptions()">
+                                        <span class="sub-toggle-slider"></span>
+                                    </label>
+                                    <div style="flex:1;">
+                                        <div style="font-weight:700;font-size:0.92rem;margin-bottom:2px;">
+                                            🔄 Subscribe &amp; Save 10%
+                                        </div>
+                                        <div style="color:#555;font-size:0.82rem;">
+                                            Get this order delivered automatically every month and save 10% on every delivery.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="subscriptionOptions" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid #c9e6f7;">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label style="font-size:0.82rem;font-weight:600;">Delivery Frequency</label>
+                                            <select id="subFrequency" style="width:100%;padding:9px 12px;border:1.5px solid #b3d9f5;border-radius:8px;font-family:inherit;font-size:0.88rem;outline:none;background:white;">
+                                                <option value="monthly">Every month</option>
+                                                <option value="bimonthly">Every 2 months</option>
+                                                <option value="quarterly">Every 3 months</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label style="font-size:0.82rem;font-weight:600;">Start Date</label>
+                                            <input type="date" id="subStartDate" style="width:100%;padding:9px 12px;border:1.5px solid #b3d9f5;border-radius:8px;font-family:inherit;font-size:0.88rem;outline:none;">
+                                        </div>
+                                    </div>
+                                    <div style="background:white;border-radius:8px;padding:10px 14px;font-size:0.82rem;color:#1a5276;border:1px solid #b3d9f5;">
+                                        💡 You can pause or cancel your subscription anytime from your profile.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-primary" onclick="goToPayment()">Continue to Payment</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Payment -->
+                    <div class="checkout-box" id="paymentBox" style="display:none;">
+                        <h2>Payment Method</h2>
+                        <div class="payment-options">
+                            <label class="payment-option">
+                                <input type="radio" name="payment" value="cod" checked onchange="showPaymentDetails('cod')">
+                                <span>💵 Cash on Delivery</span>
+                            </label>
+                            <label class="payment-option">
+                                <input type="radio" name="payment" value="gcash" onchange="showPaymentDetails('gcash')">
+                                <span style="display:flex;align-items:center;gap:6px;">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/GCash_logo.svg/200px-GCash_logo.svg.png" style="height:20px;" onerror="this.style.display='none'">
+                                    GCash
+                                </span>
+                            </label>
+                            <label class="payment-option">
+                                <input type="radio" name="payment" value="maya" onchange="showPaymentDetails('maya')">
+                                <span style="display:flex;align-items:center;gap:6px;">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Maya_%28formerly_PayMaya%29_logo.svg/200px-Maya_%28formerly_PayMaya%29_logo.svg.png" style="height:20px;" onerror="this.style.display='none'">
+                                    Maya
+                                </span>
+                            </label>
+                            <label class="payment-option">
+                                <input type="radio" name="payment" value="bank" onchange="showPaymentDetails('bank')">
+                                <span>🏦 Bank Transfer</span>
+                            </label>
+                        </div>
+
+                        <!-- COD Info -->
+                        <div id="payDetail-cod" class="payment-detail-box" style="margin-top:16px;background:#f8f9fa;border-radius:12px;padding:20px;border:1.5px solid #eee;">
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <div style="font-size:2.5rem;">💵</div>
+                                <div>
+                                    <h4 style="margin:0 0 4px;">Cash on Delivery</h4>
+                                    <p style="color:#666;font-size:0.88rem;margin:0;">Pay in cash when your order arrives. Have the exact amount ready for a smoother delivery experience.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GCash Payment -->
+                        <div id="payDetail-gcash" class="payment-detail-box pay-ewallet-box" style="display:none;margin-top:16px;">
+                            <div class="pay-ewallet-header gcash-header">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/GCash_logo.svg/200px-GCash_logo.svg.png" style="height:28px;" onerror="this.style.display='none'">
+                                <span>GCash Payment</span>
+                            </div>
+                            <div class="pay-ewallet-body">
+                                <!-- Step 1: Show amount + QR -->
+                                <div id="gcash-step1">
+                                    <p class="pay-instruction">Open your <strong>GCash app</strong> and scan the QR below, or send to the number shown.</p>
+                                    <div class="pay-qr-wrap">
+                                        <div class="pay-qr-inner">
+                                            <svg width="140" height="140" viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg">
+                                                <rect width="140" height="140" fill="white"/>
+                                                <rect x="8" y="8" width="44" height="44" fill="none" stroke="#0072CC" stroke-width="4"/>
+                                                <rect x="16" y="16" width="28" height="28" fill="#0072CC"/>
+                                                <rect x="88" y="8" width="44" height="44" fill="none" stroke="#0072CC" stroke-width="4"/>
+                                                <rect x="96" y="16" width="28" height="28" fill="#0072CC"/>
+                                                <rect x="8" y="88" width="44" height="44" fill="none" stroke="#0072CC" stroke-width="4"/>
+                                                <rect x="16" y="96" width="28" height="28" fill="#0072CC"/>
+                                                <rect x="60" y="8" width="8" height="8" fill="#0072CC"/><rect x="76" y="8" width="8" height="8" fill="#0072CC"/>
+                                                <rect x="60" y="24" width="8" height="8" fill="#0072CC"/><rect x="68" y="32" width="8" height="8" fill="#0072CC"/>
+                                                <rect x="60" y="60" width="8" height="8" fill="#0072CC"/><rect x="76" y="60" width="8" height="8" fill="#0072CC"/>
+                                                <rect x="84" y="68" width="8" height="8" fill="#0072CC"/><rect x="60" y="76" width="8" height="8" fill="#0072CC"/>
+                                                <rect x="68" y="76" width="8" height="8" fill="#0072CC"/><rect x="92" y="60" width="8" height="8" fill="#0072CC"/>
+                                                <rect x="100" y="68" width="8" height="8" fill="#0072CC"/><rect x="116" y="76" width="8" height="8" fill="#0072CC"/>
+                                                <rect x="124" y="60" width="8" height="8" fill="#0072CC"/><rect x="108" y="84" width="8" height="8" fill="#0072CC"/>
+                                                <rect x="60" y="92" width="8" height="8" fill="#0072CC"/><rect x="76" y="100" width="8" height="8" fill="#0072CC"/>
+                                                <rect x="60" y="108" width="8" height="8" fill="#0072CC"/><rect x="68" y="124" width="8" height="8" fill="#0072CC"/>
+                                                <rect x="84" y="116" width="8" height="8" fill="#0072CC"/><rect x="100" y="92" width="8" height="8" fill="#0072CC"/>
+                                                <rect x="116" y="100" width="8" height="8" fill="#0072CC"/><rect x="124" y="108" width="8" height="8" fill="#0072CC"/>
+                                                <rect x="108" y="124" width="8" height="8" fill="#0072CC"/><rect x="124" y="124" width="8" height="8" fill="#0072CC"/>
+                                                <rect x="60" y="60" width="20" height="20" rx="4" fill="#0072CC"/>
+                                                <text x="70" y="74" text-anchor="middle" fill="white" font-size="11" font-weight="bold">G</text>
+                                            </svg>
+                                        </div>
+                                        <div class="pay-account-info gcash-info">
+                                            <div class="pay-account-label">GCash Number</div>
+                                            <div class="pay-account-number" style="color:#0072CC;">0917 123 4567</div>
+                                            <div class="pay-account-name">Pet Prestige Philippines</div>
+                                        </div>
+                                    </div>
+                                    <div class="pay-amount-chip gcash-chip">
+                                        <span>Amount to Pay</span>
+                                        <strong id="gcashAmountDisplay">₱0.00</strong>
+                                    </div>
+                                    <button class="btn btn-primary pay-sent-btn" onclick="showRefInput('gcash')">
+                                        I've Sent the Payment ✓
+                                    </button>
+                                </div>
+                                <!-- Step 2: Enter reference number -->
+                                <div id="gcash-step2" style="display:none;">
+                                    <div class="pay-ref-box">
+                                        <div class="pay-ref-icon">📋</div>
+                                        <h4>Enter GCash Reference Number</h4>
+                                        <p>Open your GCash transaction history and copy the 13-digit reference number.</p>
+                                        <input type="text" id="gcash-ref-input" placeholder="e.g. 1234567890123"
+                                            maxlength="16" style="width:100%;padding:12px;border:1.5px solid #0072CC;border-radius:10px;font-family:monospace;font-size:1rem;text-align:center;outline:none;letter-spacing:2px;margin:10px 0;">
+                                        <div style="display:flex;gap:10px;">
+                                            <button class="btn btn-outline" onclick="document.getElementById('gcash-step2').style.display='none';document.getElementById('gcash-step1').style.display='block';">Back</button>
+                                            <button class="btn btn-primary" style="flex:1;" onclick="confirmEwalletPayment('gcash')">Confirm Payment</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Step 3: Confirmed -->
+                                <div id="gcash-step3" style="display:none;">
+                                    <div class="pay-confirmed-box">
+                                        <div style="font-size:3rem;margin-bottom:8px;">✅</div>
+                                        <h4>GCash Payment Recorded</h4>
+                                        <p>Ref: <strong id="gcash-ref-display" style="font-family:monospace;color:#0072CC;"></strong></p>
+                                        <p style="font-size:0.82rem;color:#888;">We'll verify your payment within 1 business hour.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Maya Payment -->
+                        <div id="payDetail-maya" class="payment-detail-box pay-ewallet-box" style="display:none;margin-top:16px;">
+                            <div class="pay-ewallet-header maya-header">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Maya_%28formerly_PayMaya%29_logo.svg/200px-Maya_%28formerly_PayMaya%29_logo.svg.png" style="height:24px;" onerror="this.style.display='none'">
+                                <span>Maya Payment</span>
+                            </div>
+                            <div class="pay-ewallet-body">
+                                <div id="maya-step1">
+                                    <p class="pay-instruction">Open your <strong>Maya app</strong> and scan the QR below, or send to the number shown.</p>
+                                    <div class="pay-qr-wrap">
+                                        <div class="pay-qr-inner">
+                                            <svg width="140" height="140" viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg">
+                                                <rect width="140" height="140" fill="white"/>
+                                                <rect x="8" y="8" width="44" height="44" fill="none" stroke="#00A651" stroke-width="4"/>
+                                                <rect x="16" y="16" width="28" height="28" fill="#00A651"/>
+                                                <rect x="88" y="8" width="44" height="44" fill="none" stroke="#00A651" stroke-width="4"/>
+                                                <rect x="96" y="16" width="28" height="28" fill="#00A651"/>
+                                                <rect x="8" y="88" width="44" height="44" fill="none" stroke="#00A651" stroke-width="4"/>
+                                                <rect x="16" y="96" width="28" height="28" fill="#00A651"/>
+                                                <rect x="60" y="8" width="8" height="8" fill="#00A651"/><rect x="76" y="16" width="8" height="8" fill="#00A651"/>
+                                                <rect x="68" y="24" width="8" height="8" fill="#00A651"/><rect x="60" y="40" width="8" height="8" fill="#00A651"/>
+                                                <rect x="76" y="52" width="8" height="8" fill="#00A651"/><rect x="60" y="60" width="8" height="8" fill="#00A651"/>
+                                                <rect x="84" y="60" width="8" height="8" fill="#00A651"/><rect x="68" y="68" width="8" height="8" fill="#00A651"/>
+                                                <rect x="92" y="76" width="8" height="8" fill="#00A651"/><rect x="100" y="60" width="8" height="8" fill="#00A651"/>
+                                                <rect x="116" y="68" width="8" height="8" fill="#00A651"/><rect x="124" y="84" width="8" height="8" fill="#00A651"/>
+                                                <rect x="108" y="76" width="8" height="8" fill="#00A651"/><rect x="60" y="84" width="8" height="8" fill="#00A651"/>
+                                                <rect x="76" y="92" width="8" height="8" fill="#00A651"/><rect x="68" y="108" width="8" height="8" fill="#00A651"/>
+                                                <rect x="60" y="116" width="8" height="8" fill="#00A651"/><rect x="84" y="124" width="8" height="8" fill="#00A651"/>
+                                                <rect x="100" y="100" width="8" height="8" fill="#00A651"/><rect x="116" y="108" width="8" height="8" fill="#00A651"/>
+                                                <rect x="108" y="116" width="8" height="8" fill="#00A651"/><rect x="124" y="100" width="8" height="8" fill="#00A651"/>
+                                                <rect x="60" y="60" width="20" height="20" rx="4" fill="#00A651"/>
+                                                <text x="70" y="74" text-anchor="middle" fill="white" font-size="10" font-weight="bold">M</text>
+                                            </svg>
+                                        </div>
+                                        <div class="pay-account-info maya-info">
+                                            <div class="pay-account-label">Maya Number</div>
+                                            <div class="pay-account-number" style="color:#00A651;">0917 123 4567</div>
+                                            <div class="pay-account-name">Pet Prestige Philippines</div>
+                                        </div>
+                                    </div>
+                                    <div class="pay-amount-chip maya-chip">
+                                        <span>Amount to Pay</span>
+                                        <strong id="mayaAmountDisplay">₱0.00</strong>
+                                    </div>
+                                    <button class="btn btn-primary pay-sent-btn" onclick="showRefInput('maya')" style="background:#00A651;border-color:#00A651;">
+                                        I've Sent the Payment ✓
+                                    </button>
+                                </div>
+                                <div id="maya-step2" style="display:none;">
+                                    <div class="pay-ref-box">
+                                        <div class="pay-ref-icon">📋</div>
+                                        <h4>Enter Maya Reference Number</h4>
+                                        <p>Find it in your Maya transaction history and enter it below.</p>
+                                        <input type="text" id="maya-ref-input" placeholder="e.g. MY-1234567890"
+                                            maxlength="20" style="width:100%;padding:12px;border:1.5px solid #00A651;border-radius:10px;font-family:monospace;font-size:1rem;text-align:center;outline:none;letter-spacing:2px;margin:10px 0;">
+                                        <div style="display:flex;gap:10px;">
+                                            <button class="btn btn-outline" onclick="document.getElementById('maya-step2').style.display='none';document.getElementById('maya-step1').style.display='block';">Back</button>
+                                            <button class="btn btn-primary" style="flex:1;background:#00A651;border-color:#00A651;" onclick="confirmEwalletPayment('maya')">Confirm Payment</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="maya-step3" style="display:none;">
+                                    <div class="pay-confirmed-box">
+                                        <div style="font-size:3rem;margin-bottom:8px;">✅</div>
+                                        <h4>Maya Payment Recorded</h4>
+                                        <p>Ref: <strong id="maya-ref-display" style="font-family:monospace;color:#00A651;"></strong></p>
+                                        <p style="font-size:0.82rem;color:#888;">We'll verify your payment within 1 business hour.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bank Transfer -->
+                        <div id="payDetail-bank" class="payment-detail-box" style="display:none;margin-top:16px;">
+                            <div class="pay-bank-header">
+                                <span style="font-size:1.5rem;">🏦</span>
+                                <span>Bank Transfer / Online Banking</span>
+                            </div>
+                            <div class="pay-bank-body">
+                                <p class="pay-instruction">Transfer the exact amount to any of the following accounts. <strong>Use your Order ID as the reference.</strong></p>
+
+                                <div class="bank-accounts-grid" id="bankAccountsGrid">
+                                    <!-- Rendered by JS -->
+                                </div>
+
+                                <div class="pay-amount-chip" style="background:linear-gradient(135deg,#1a1a2e,#16213e);color:white;margin:16px 0;">
+                                    <span>Amount to Transfer</span>
+                                    <strong id="bankAmountDisplay">₱0.00</strong>
+                                </div>
+
+                                <div id="bank-ref-section">
+                                    <label style="font-size:0.85rem;font-weight:600;color:#444;display:block;margin-bottom:6px;">
+                                        Upload Proof of Payment (screenshot)
+                                    </label>
+                                    <input type="file" id="bankProofInput" accept="image/*" onchange="previewBankProof(this)"
+                                        style="width:100%;padding:8px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:0.85rem;">
+                                    <div id="bankProofPreview" style="display:none;margin-top:8px;">
+                                        <img id="bankProofImg" style="max-width:100%;max-height:200px;border-radius:8px;border:1.5px solid #eee;">
+                                    </div>
+                                    <div class="form-group" style="margin-top:12px;">
+                                        <label style="font-size:0.85rem;font-weight:600;color:#444;">Bank Reference / Transaction Number *</label>
+                                        <input type="text" id="bankRefInput" placeholder="e.g. TXN-20240315-001234"
+                                            style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-family:inherit;font-size:0.9rem;outline:none;margin-top:4px;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label style="font-size:0.85rem;font-weight:600;color:#444;">Bank Used</label>
+                                        <select id="bankUsedSelect" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-family:inherit;font-size:0.9rem;outline:none;background:white;">
+                                            <option value="">Select your bank</option>
+                                            <option value="bdo">BDO</option>
+                                            <option value="bpi">BPI</option>
+                                            <option value="unionbank">UnionBank</option>
+                                            <option value="metrobank">Metrobank</option>
+                                            <option value="landbank">Landbank</option>
+                                            <option value="rcbc">RCBC</option>
+                                            <option value="security-bank">Security Bank</option>
+                                            <option value="pnb">PNB</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    <p style="font-size:0.78rem;color:#888;margin:0;">
+                                        ⚠️ Orders are processed after payment verification (within 1–2 business hours).
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- COD Info -->
+                        <div id="payDetail-cod" class="payment-detail-box" style="margin-top:16px;background:#f8f9fa;border-radius:12px;padding:20px;border:1.5px solid #eee;">
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <div style="font-size:2.5rem;">💵</div>
+                                <div>
+                                    <h4 style="margin:0 0 4px;">Cash on Delivery</h4>
+                                    <p style="color:#666;font-size:0.88rem;margin:0;">Pay in cash when your order arrives. Have the exact amount ready for a smoother delivery experience.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions" style="margin-top:20px;">
+                        <div class="form-actions" style="margin-top:20px;">
+                            <button type="button" class="btn btn-outline" onclick="backToShipping()">Back</button>
+                            <button type="button" class="btn btn-primary" onclick="reviewOrder()">Review Order</button>
+                        </div>
+                    </div>
+
+                    <!-- Review -->
+                    <div class="checkout-box" id="reviewBox" style="display:none;">
+                        <h2>Review & Place Order</h2>
+                        <div class="review-section">
+                            <h4>Shipping Address</h4>
+                            <div id="reviewAddress"></div>
+                        </div>
+                        <div class="review-section">
+                            <h4>Payment Method</h4>
+                            <div id="reviewPayment"></div>
+                        </div>
+                        <div class="review-section">
+                            <h4>Order Items</h4>
+                            <div id="reviewItems"></div>
+                        </div>
+                        <div class="checkout-totals">
+                            <div class="summary-row total">
+                                <span>Total</span>
+                                <span id="checkoutTotal">₱0.00</span>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-outline" onclick="backToPayment()">Back</button>
+                            <button type="button" class="btn btn-primary btn-large" onclick="placeOrder()">Place Order</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary Sidebar -->
+                <div class="checkout-summary">
+                    <h3>Order Summary</h3>
+                    <div class="summary-items" id="summaryItems"></div>
+                    <div class="summary-totals">
+                        <div class="summary-row"><span>Subtotal</span><span id="checkoutSubtotal">₱0.00</span></div>
+                        <div class="summary-row"><span>Shipping</span><span id="checkoutShipping">₱80.00</span></div>
+                        <div class="summary-row discount" id="checkoutDiscountRow" style="display:none;">
+                            <span>Discount</span><span id="checkoutDiscount">-₱0.00</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Total</span><span id="checkoutTotal">₱0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<script src="js/api.js"></script>
+<script src="js/script.js"></script>
+<script src="js/api-bridge.js"></script> <script>
+    // ── Bank accounts data ────────────────────────────────────────
+    var BANK_ACCOUNTS = [
+        { bank:'BDO',       logo:'🏦', color:'#003087', accountName:'Pet Prestige Philippines', accountNumber:'004680123456', type:'Savings' },
+        { bank:'BPI',       logo:'🏦', color:'#c0392b', accountName:'Pet Prestige Philippines', accountNumber:'9876543210',   type:'Savings' },
+        { bank:'UnionBank', logo:'🏦', color:'#e07b00', accountName:'Pet Prestige Philippines', accountNumber:'109812345678', type:'Checking' },
+        { bank:'Metrobank', logo:'🏦', color:'#003893', accountName:'Pet Prestige Philippines', accountNumber:'536901234567', type:'Savings' }
+    ];
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCheckoutSummary();
+
+        // Loyalty points
+        var user = JSON.parse(localStorage.getItem('petPrestigeUser') || 'null');
+        if (user && (user.loyaltyPoints || 0) >= 100) {
+            var sec = document.getElementById('loyaltySection');
+            if (sec) sec.style.display = 'block';
+            var ptsEl = document.getElementById('loyaltyPointsDisplay');
+            var wthEl = document.getElementById('loyaltyWorthDisplay');
+            if (ptsEl) ptsEl.textContent = user.loyaltyPoints;
+            if (wthEl) wthEl.textContent = '\u20B1' + Math.floor((user.loyaltyPoints || 0) * 0.50).toLocaleString();
+        }
+        window._loyaltyRedeemPoints = 0;
+
+        // Set subscription start date default to tomorrow
+        var subDate = document.getElementById('subStartDate');
+        if (subDate) {
+            var tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 30);
+            subDate.value = tomorrow.toISOString().split('T')[0];
+            subDate.min   = new Date().toISOString().split('T')[0];
+        }
+
+        // Render bank accounts
+        renderBankAccounts();
+
+        // Observe paymentBox to show COD by default
+        var paymentObserver = new MutationObserver(function() {
+            var box = document.getElementById('paymentBox');
+            if (box && box.style.display !== 'none') showPaymentDetails('cod');
+        });
+        var paymentBox = document.getElementById('paymentBox');
+        if (paymentBox) paymentObserver.observe(paymentBox, { attributes: true, attributeFilter: ['style'] });
+    });
+
+    // ── Loyalty ───────────────────────────────────────────────────
+    function previewLoyaltyRedeem() {
+        var user  = JSON.parse(localStorage.getItem('petPrestigeUser') || 'null');
+        if (!user) return;
+        var input = document.getElementById('loyaltyRedeemInput');
+        var msg   = document.getElementById('loyaltyRedeemMsg');
+        var pts   = Math.min(parseInt(input ? input.value : 0) || 0, user.loyaltyPoints || 0);
+        var disc  = Math.floor(pts * 0.50);
+        if (msg && pts > 0) {
+            msg.style.display = 'block';
+            msg.textContent   = pts + ' pts will reduce your total by \u20B1' + disc.toLocaleString();
+        } else if (msg) {
+            msg.style.display = 'none';
+        }
+    }
+    function applyLoyaltyPoints() {
+        var user  = JSON.parse(localStorage.getItem('petPrestigeUser') || 'null');
+        if (!user) return;
+        var input = document.getElementById('loyaltyRedeemInput');
+        var raw   = parseInt(input ? input.value : 0) || 0;
+        var avail = user.loyaltyPoints || 0;
+        if (raw < 100) { showToast('Minimum redemption is 100 points.', 'error'); return; }
+        if (raw > avail) { showToast('You only have ' + avail + ' points.', 'error'); return; }
+        window._loyaltyRedeemPoints = raw;
+        var disc = Math.floor(raw * 0.50);
+        showToast('\u20B1' + disc + ' loyalty discount applied! \uD83C\uDF89');
+        var msg = document.getElementById('loyaltyRedeemMsg');
+        if (msg) { msg.style.display = 'block'; msg.textContent = raw + ' pts applied \u2014 \u20B1' + disc + ' off!'; }
+        loadCheckoutSummary();
+    }
+
+    // ── Subscription toggle ───────────────────────────────────────
+    function toggleSubscriptionOptions() {
+        var chk  = document.getElementById('subscribeToggle');
+        var opts = document.getElementById('subscriptionOptions');
+        if (opts) opts.style.display = chk && chk.checked ? 'block' : 'none';
+    }
+
+    // ── Payment method display ────────────────────────────────────
+    function showPaymentDetails(method) {
+        document.querySelectorAll('.payment-detail-box').forEach(function(el) {
+            el.style.display = 'none';
+        });
+        var box = document.getElementById('payDetail-' + method);
+        if (box) box.style.display = 'block';
+
+        var total     = typeof getFinalTotal === 'function' ? getFinalTotal() : 0;
+        var formatted = '\u20B1' + total.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        if (method === 'gcash') {
+            var el = document.getElementById('gcashAmountDisplay');
+            if (el) el.textContent = formatted;
+        } else if (method === 'maya') {
+            var el2 = document.getElementById('mayaAmountDisplay');
+            if (el2) el2.textContent = formatted;
+        } else if (method === 'bank') {
+            var el3 = document.getElementById('bankAmountDisplay');
+            if (el3) el3.textContent = formatted;
+        }
+    }
+
+    // ── GCash / Maya reference flow ───────────────────────────────
+    function showRefInput(provider) {
+        document.getElementById(provider + '-step1').style.display = 'none';
+        document.getElementById(provider + '-step2').style.display = 'block';
+    }
+
+    function confirmEwalletPayment(provider) {
+        var refInput = document.getElementById(provider + '-ref-input');
+        var ref = refInput ? refInput.value.trim() : '';
+        if (!ref || ref.length < 6) {
+            showToast('Please enter a valid reference number.', 'error');
+            if (refInput) refInput.focus();
+            return;
+        }
+        // Store ref for order
+        window._paymentRef = ref;
+        window._paymentProvider = provider;
+
+        document.getElementById(provider + '-step2').style.display = 'none';
+        document.getElementById(provider + '-step3').style.display = 'block';
+        var display = document.getElementById(provider + '-ref-display');
+        if (display) display.textContent = ref;
+        showToast('Payment reference saved! \u2713', 'success');
+    }
+
+    // ── Bank transfer helpers ─────────────────────────────────────
+    function renderBankAccounts() {
+        var grid = document.getElementById('bankAccountsGrid');
+        if (!grid) return;
+        grid.innerHTML = BANK_ACCOUNTS.map(function(b) {
+// FIXED — use \' to escape inside a single-quoted string
+return '<div class="bank-account-card" onclick="copyBankNumber(\'' + b.accountNumber + '\', this)">' +                '<div class="bank-account-top">' +
+                '<span style="font-size:1.4rem;">' + b.logo + '</span>' +
+                '<span class="bank-name" style="color:' + b.color + ';">' + b.bank + '</span>' +
+                '<span class="bank-type">' + b.type + '</span>' +
+                '</div>' +
+                '<div class="bank-acct-name">' + b.accountName + '</div>' +
+                '<div class="bank-acct-number" style="color:' + b.color + ';">' + b.accountNumber + '</div>' +
+                '<div class="bank-copy-hint"><i class="fas fa-copy"></i> Tap to copy</div>' +
+                '</div>';
+        }).join('');
+    }
+
+    function copyBankNumber(number, el) {
+        navigator.clipboard ? navigator.clipboard.writeText(number).then(function() {
+            showToast('Account number copied! \uD83D\uDCCB');
+            if (el) { el.style.background = '#d5f5e3'; setTimeout(function(){ el.style.background=''; }, 1200); }
+        }) : showToast(number + ' \u2014 copy this number');
+    }
+
+    function previewBankProof(input) {
+        var file = input.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var preview = document.getElementById('bankProofPreview');
+            var img     = document.getElementById('bankProofImg');
+            if (img) img.src = e.target.result;
+            if (preview) preview.style.display = 'block';
+            window._bankProofBase64 = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // ── Override reviewOrder to include all payment types ─────────
+    var _origReviewOrder = typeof reviewOrder === 'function' ? reviewOrder : null;
+    reviewOrder = function() {
+        var method = document.querySelector('input[name="payment"]:checked');
+        if (!method) { showToast('Please select a payment method.', 'error'); return; }
+        var methodVal = method.value;
+
+        // Validate bank ref if bank transfer selected
+        if (methodVal === 'bank') {
+            var bankRef = document.getElementById('bankRefInput');
+            if (!bankRef || !bankRef.value.trim()) {
+                showToast('Please enter your bank transaction reference number.', 'error');
+                bankRef && bankRef.focus();
+                return;
+            }
+            window._paymentRef = bankRef.value.trim();
+            window._paymentProvider = document.getElementById('bankUsedSelect') ? document.getElementById('bankUsedSelect').value : 'bank';
+        }
+
+        document.getElementById('paymentBox').style.display = 'none';
+        document.getElementById('reviewBox').style.display  = 'block';
+        document.querySelectorAll('.step')[2] && document.querySelectorAll('.step')[2].classList.add('active');
+
+        var elId = function(id) { var el = document.getElementById(id); return el ? el.value : ''; };
+        document.getElementById('reviewAddress').innerHTML =
+            elId('firstName') + ' ' + elId('lastName') + '<br>' +
+            elId('phone') + ' | ' + elId('email') + '<br>' +
+            elId('address') + ', ' + elId('city') + ', ' + elId('province') + ' ' + elId('postal');
+
+        var payLabels = { cod: '\uD83D\uDCB5 Cash on Delivery', gcash: '\uD83D\uDCF1 GCash', maya: '\uD83D\uDCF1 Maya', bank: '\uD83C\uDFE6 Bank Transfer' };
+        var refNote = window._paymentRef ? '<br><small style="color:#888;">Ref: ' + window._paymentRef + '</small>' : '';
+        document.getElementById('reviewPayment').innerHTML = (payLabels[methodVal] || methodVal) + refNote;
+
+        // Subscription info
+        var subChk = document.getElementById('subscribeToggle');
+        if (subChk && subChk.checked) {
+            var freq = document.getElementById('subFrequency');
+            var freqLabel = freq ? freq.options[freq.selectedIndex].text : 'monthly';
+            document.getElementById('reviewPayment').innerHTML +=
+                '<br><small style="color:#2980b9;"><i class="fas fa-sync-alt"></i> Subscribed \u2014 ' + freqLabel + '</small>';
+        }
+
+        document.getElementById('reviewItems').innerHTML = cart.map(function(item) {
+            return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;">' +
+                '<span>' + item.name + ' \xD7 ' + item.quantity + '</span>' +
+                '<strong>' + formatPrice(item.price * item.quantity) + '</strong></div>';
+        }).join('');
+        document.querySelectorAll('#checkoutTotal').forEach(function(el) { el.textContent = formatPrice(getFinalTotal()); });
+    };
+
+    // ── Override placeOrder to save subscription + payment ref ────
+    var _origPlaceOrder = typeof placeOrder === 'function' ? placeOrder : null;
+    placeOrder = function() {
+        var method = document.querySelector('input[name="payment"]:checked');
+        var methodVal = method ? method.value : 'cod';
+        var subChk = document.getElementById('subscribeToggle');
+        var isSubscription = subChk && subChk.checked;
+
+        // Build subscription object if applicable
+        var subscriptionData = null;
+        if (isSubscription) {
+            var freq     = document.getElementById('subFrequency');
+            var startEl  = document.getElementById('subStartDate');
+            var freqVal  = freq ? freq.value : 'monthly';
+            var freqDays = { monthly: 30, bimonthly: 60, quarterly: 90 };
+            var startDate = startEl ? startEl.value : new Date().toISOString().split('T')[0];
+            subscriptionData = {
+                id:          'SUB-' + Date.now(),
+                frequency:   freqVal,
+                frequencyDays: freqDays[freqVal] || 30,
+                startDate:   startDate,
+                nextDelivery: startDate,
+                status:      'active',
+                items:       JSON.parse(JSON.stringify(cart)),
+                discount:    0.10,
+                createdAt:   new Date().toISOString()
+            };
+        }
+
+        var elId = function(id) { var el = document.getElementById(id); return el ? el.value : ''; };
+        var order = {
+            id:           'PP-' + Date.now(),
+            date:         new Date().toISOString(),
+            status:       methodVal === 'cod' ? 'pending' : 'payment_verification',
+            items:        cart.slice(),
+            subtotal:     getCartTotal(),
+            shippingCost: getShippingCost(),
+            discount:     getDiscount(),
+            total:        getFinalTotal(),
+            shippingInfo: {
+                firstName: elId('firstName'), lastName: elId('lastName'),
+                phone:     elId('phone'),     email:    elId('email'),
+                address:   elId('address'),   city:     elId('city'),
+                province:  elId('province'),  postal:   elId('postal')
+            },
+            paymentInfo: {
+                method:    methodVal,
+                ref:       window._paymentRef || null,
+                bank:      window._paymentProvider || null,
+                proofImg:  window._bankProofBase64 || null
+            },
+            subscription: subscriptionData,
+            trackingInfo: {
+                riderName:  'Juan Dela Cruz',
+                riderPhone: '09171234567',
+                riderLat:   null,
+                riderLng:   null,
+                estimatedDelivery: null
+            }
+        };
+
+        var orders = JSON.parse(localStorage.getItem('petPrestigeOrders') || '[]');
+        orders.push(order);
+        localStorage.setItem('petPrestigeOrders', JSON.stringify(orders));
+
+        // Save subscription
+        if (subscriptionData) {
+            subscriptionData.orderId    = order.id;
+            subscriptionData.shippingInfo = order.shippingInfo;
+            subscriptionData.paymentInfo  = { method: methodVal };
+            var subs = JSON.parse(localStorage.getItem('petPrestigeSubscriptions') || '[]');
+            subs.push(subscriptionData);
+            localStorage.setItem('petPrestigeSubscriptions', JSON.stringify(subs));
+        }
+
+        cart = [];
+        appliedVoucher = null;
+        window._paymentRef      = null;
+        window._paymentProvider = null;
+        window._bankProofBase64 = null;
+        localStorage.removeItem('petPrestigeCart');
+        localStorage.removeItem('petPrestigeVoucher');
+
+        var user = getCurrentUser();
+        if (user) {
+            user.orders = user.orders || [];
+            user.orders.push(order.id);
+            saveCurrentUser(user);
+            var pts = addLoyaltyPoints(order.total);
+            order.pointsEarned = pts;
+            if (window._loyaltyRedeemPoints > 0) {
+                order.pointsRedeemed = window._loyaltyRedeemPoints;
+                window._loyaltyRedeemPoints = 0;
+            }
+            var ordersUp = JSON.parse(localStorage.getItem('petPrestigeOrders') || '[]');
+            var idx = ordersUp.findIndex(function(o){ return o.id === order.id; });
+            if (idx >= 0) ordersUp[idx] = order;
+            localStorage.setItem('petPrestigeOrders', JSON.stringify(ordersUp));
+        }
+
+        window.location.href = 'order-success.html?order=' + order.id;
+    };
+
+    // ── API ORDER SAVE — Override to also save to database ──
+const _localPlaceOrder = placeOrder;
+placeOrder = async function() {
+    if (!window.API || !API.auth.isLoggedIn()) {
+        return _localPlaceOrder();
+    }
+
+    const elId = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+    const method = document.querySelector('input[name="payment"]:checked')?.value || 'cod';
+
+    const orderData = {
+        first_name:   elId('firstName'),
+        last_name:    elId('lastName'),
+        email:        elId('email'),
+        phone:        elId('phone'),
+        address_line: elId('address'),
+        city:         elId('city'),
+        province:     elId('province'),
+        zip_code:     elId('postal'),
+        payment_method: method,
+        voucher_code: window.appliedVoucher?.code || null,
+        notes:        null
+    };
+
+    if (!orderData.first_name || !orderData.last_name || !orderData.email || !orderData.phone || !orderData.address_line || !orderData.city || !orderData.province) {
+        return _localPlaceOrder();
+    }
+
+    try {
+        const data = await API.orders.place(orderData);
+        // Clear cart
+        cart = [];
+        appliedVoucher = null;
+        localStorage.removeItem('petPrestigeCart');
+        localStorage.removeItem('petPrestigeVoucher');
+        window.location.href = 'order-success.html?order=' + data.order.order_number;
+    } catch(err) {
+        console.error('API order failed, falling back to localStorage:', err);
+        _localPlaceOrder();
+    }
+};
+    </script>
+    <script>
+  window.PAYMONGO_PUBLIC_KEY = 'pk_test_HWGC59X38JTypAGJNGt5kJtm';
+</script>
+<script src="js/payment-gateway.js"></script>
+</body>
+</html>

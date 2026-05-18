@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Prestige | Premium Pet Supplies & Accessories</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- ==========================================
+         NAVIGATION
+    ========================================== -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-wrapper">
+                <!-- Logo -->
+                <a href="index.html" class="logo">
+                    <img src="images/logo-pet-prestige.png" alt="Pet Prestige" class="logo-img-main"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="logo-fallback" style="display:none; align-items:center; gap:10px;">
+                        <div class="logo-icon">🐾</div>
+                        <div class="logo-text">
+                            <span class="logo-main">Pet Prestige</span>
+                            <span class="logo-tagline">Premium Pet Care</span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Search Bar -->
+                <div class="search-bar">
+                    <input type="text" id="globalSearch" placeholder="Search products, brands, categories..."
+                           onkeypress="if(event.key==='Enter') performSearch()">
+                    <button onclick="performSearch()"><i class="fas fa-search"></i></button>
+                </div>
+
+                <!-- Nav Actions -->
+                <div class="nav-actions">
+                    <a href="cart.html" class="nav-icon cart-icon" title="Cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </a>
+                    <a href="wishlist.html" class="nav-icon" title="Wishlist" style="color:var(--primary);">
+                        <i class="fas fa-heart"></i>
+                        <span class="cart-count wishlist-count" id="wishlistCount" style="background:#e74c3c;">0</span>
+                    </a>
+                    <a href="profile.html" class="nav-icon user-icon" title="Profile">
+                        <i class="fas fa-user"></i>
+                    </a>
+                    <button class="mobile-menu-btn" onclick="toggleMobileMenu()" title="Menu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Nav Links -->
+            <div class="nav-links" id="navLinks">
+                <a href="shop.html">🛒 Shop</a>
+                <a href="learn.html">📚 Learn</a>
+                <a href="lost-found.html">🔍 Find</a>
+                <a href="community.html">👥 Connect</a>
+                <a href="#" onclick="openSupportChat(); return false;">💬 Support</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ==========================================
+         HERO SECTION
+    ========================================== -->
+    <section class="hero">
+        <div class="container" style="display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center;">
+            <div class="hero-content">
+                <span style="display:inline-block; background:var(--primary); color:white; padding:6px 16px; border-radius:20px; font-size:0.85rem; font-weight:600; margin-bottom:20px;">
+                    🐾 Philippines' #1 Pet Store
+                </span>
+                <h1>Give Your Pet The <span class="highlight">Prestige</span> They Deserve</h1>
+                <p>Premium food, toys, grooming & accessories — delivered with love across the Philippines.</p>
+                <div class="hero-buttons">
+                    <a href="shop.html" class="btn btn-primary btn-large">
+                        <i class="fas fa-shopping-bag"></i> Shop Now
+                    </a>
+                    <a href="learn.html" class="btn btn-outline btn-large">
+                        <i class="fas fa-book-open"></i> Pet Care Guides
+                    </a>
+                </div>
+                <div style="display:flex; gap:30px; margin-top:30px;">
+                    <div style="text-align:center;">
+                        <div style="font-size:1.5rem; font-weight:700; color:var(--primary);">10K+</div>
+                        <div style="font-size:0.8rem; color:var(--gray);">Happy Customers</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:1.5rem; font-weight:700; color:var(--primary);">500+</div>
+                        <div style="font-size:0.8rem; color:var(--gray);">Products</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:1.5rem; font-weight:700; color:var(--primary);">4.9★</div>
+                        <div style="font-size:0.8rem; color:var(--gray);">Average Rating</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-image" style="position:relative; display:flex; align-items:center; justify-content:center;">
+                <img src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=600&h=500&fit=crop"
+                     alt="Happy pets"
+                     style="width:100%; max-width:500px; border-radius:20px; box-shadow:0 20px 60px rgba(0,0,0,0.15);"
+                     onerror="this.parentElement.innerHTML='<div class=\'hero-pet-showcase\'><div class=\'floating-pet\'>🐕</div><div class=\'floating-pet\'>🐈</div><div class=\'floating-pet\'>🐦</div><div class=\'floating-pet\'>🐟</div></div>'">
+                <!-- Floating badges -->
+                <div style="position:absolute; top:20px; right:20px; background:white; padding:10px 16px; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.15); font-size:0.85rem; font-weight:600;">
+                    🚚 Free shipping ₱500+
+                </div>
+                <div style="position:absolute; bottom:30px; left:10px; background:white; padding:10px 16px; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.15); font-size:0.85rem; font-weight:600;">
+                    ✅ 7-day returns
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         CATEGORIES
+    ========================================== -->
+    <section class="categories" style="padding:60px 0; background:white;">
+        <div class="container">
+            <h2 class="section-title">Shop by Pet</h2>
+            <div class="category-grid" style="grid-template-columns:repeat(5,1fr);">
+                <a href="shop.html?category=dogs" class="category-card">
+                    <div class="category-icon">🐕</div>
+                    <h3>Dogs</h3>
+                    <p>Food, Toys, Accessories</p>
+                    <span class="item-count">20+ products</span>
+                </a>
+                <a href="shop.html?category=cats" class="category-card">
+                    <div class="category-icon">🐈</div>
+                    <h3>Cats</h3>
+                    <p>Food, Toys, Accessories</p>
+                    <span class="item-count">15+ products</span>
+                </a>
+                <a href="shop.html?category=birds" class="category-card">
+                    <div class="category-icon">🐦</div>
+                    <h3>Birds</h3>
+                    <p>Seeds, Cages, Toys</p>
+                    <span class="item-count">10+ products</span>
+                </a>
+                <a href="shop.html?category=fish" class="category-card">
+                    <div class="category-icon">🐟</div>
+                    <h3>Fish</h3>
+                    <p>Food, Tanks, Decor</p>
+                    <span class="item-count">10+ products</span>
+                </a>
+                <a href="shop.html?category=small-pets" class="category-card">
+                    <div class="category-icon">🐹</div>
+                    <h3>Small Pets</h3>
+                    <p>Food, Cages, Toys</p>
+                    <span class="item-count">8+ products</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         PROMOTIONS BANNER
+    ========================================== -->
+    <section class="promotions">
+        <div class="container">
+            <div class="promo-banner">
+                <h2 style="margin-bottom:10px;">🎉 Exclusive Voucher Codes</h2>
+                <p style="opacity:0.9; margin-bottom:20px;">Use these codes at checkout to save on your order!</p>
+                <div class="promo-list">
+                    <div class="promo-item">
+                        <span class="promo-badge">SAVE8</span>
+                        <span>8% off — min. ₱1,000</span>
+                    </div>
+                    <div class="promo-item">
+                        <span class="promo-badge">PETLOVE</span>
+                        <span>15% off — min. ₱1,500</span>
+                    </div>
+                    <div class="promo-item">
+                        <span class="promo-badge">FREESHIP</span>
+                        <span>Free shipping — min. ₱500</span>
+                    </div>
+                    <div class="promo-item">
+                        <span class="promo-badge">SAVE10</span>
+                        <span>10% off — min. ₱5,000</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         FEATURED PRODUCTS
+    ========================================== -->
+    <section style="padding:60px 0; background:var(--light);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title" style="margin-bottom:0;">Featured Products</h2>
+                <a href="shop.html" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="product-grid" id="featuredProducts">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         WHY CHOOSE US
+    ========================================== -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Why Pet Owners Trust Pet Prestige</h2>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <i class="fas fa-truck"></i>
+                    <h4>Fast Nationwide Delivery</h4>
+                    <p>Most orders arrive in 1–3 business days anywhere in the Philippines.</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <h4>Quality Guaranteed</h4>
+                    <p>100% authentic products. Not satisfied? 7-day hassle-free returns.</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-paw"></i>
+                    <h4>Pet Expert Support</h4>
+                    <p>Our team of passionate pet owners is here to help you every step of the way.</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-credit-card"></i>
+                    <h4>Secure & Easy Payment</h4>
+                    <p>Pay with COD, GCash, PayMaya, or card — all transactions are 100% secure.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         PET CARE GUIDES PREVIEW
+    ========================================== -->
+    <section style="padding:60px 0; background:var(--light);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title" style="margin-bottom:0;">Pet Care Guides</h2>
+                <a href="learn.html" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="guides-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:25px;">
+                <div class="guide-card" onclick="window.location.href='guide-detail.html?id=1'">
+                    <img class="guide-image" src="https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=200&fit=crop" alt="Puppy Training">
+                    <div class="guide-content">
+                        <span class="guide-tag">Dogs</span>
+                        <h3>Complete Guide to Puppy Training</h3>
+                        <p>Master positive reinforcement training for a happy, well-behaved pup.</p>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:15px;">
+                            <small style="color:var(--gray);"><i class="far fa-clock"></i> 8 min read</small>
+                            <a href="guide-detail.html?id=1" class="btn btn-sm btn-outline">Read</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="guide-card" onclick="window.location.href='guide-detail.html?id=2'">
+                    <img class="guide-image" src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&h=200&fit=crop" alt="Cat Body Language">
+                    <div class="guide-content">
+                        <span class="guide-tag">Cats</span>
+                        <h3>Understanding Cat Body Language</h3>
+                        <p>Decode your cat's signals and build a stronger, more trusting bond.</p>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:15px;">
+                            <small style="color:var(--gray);"><i class="far fa-clock"></i> 6 min read</small>
+                            <a href="guide-detail.html?id=2" class="btn btn-sm btn-outline">Read</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="guide-card" onclick="window.location.href='guide-detail.html?id=3'">
+                    <img class="guide-image" src="https://images.unsplash.com/photo-1522069365940-3ccea4d79fa2?w=400&h=200&fit=crop" alt="Aquarium Setup">
+                    <div class="guide-content">
+                        <span class="guide-tag">Fish</span>
+                        <h3>Setting Up Your First Aquarium</h3>
+                        <p>Everything you need to know to set up a thriving freshwater aquarium.</p>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:15px;">
+                            <small style="color:var(--gray);"><i class="far fa-clock"></i> 10 min read</small>
+                            <a href="guide-detail.html?id=3" class="btn btn-sm btn-outline">Read</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         NEWSLETTER
+    ========================================== -->
+    <!-- Recently Viewed -->
+    <section id="recentlyViewedSection" style="padding:60px 0; background:#f8f9fa; display:none;">
+        <div class="container">
+            <h2 style="font-size:1.8rem; font-weight:700; margin-bottom:30px; color:#222;">
+                <i class="fas fa-history" style="color:var(--primary);margin-right:10px;"></i>Recently Viewed
+            </h2>
+            <div class="product-grid" id="recentlyViewedGrid"></div>
+        </div>
+    </section>
+
+    <section style="padding:60px 0; background:white;">
+        <div class="container">
+            <div style="background:linear-gradient(135deg,var(--primary),var(--primary-dark)); border-radius:20px; padding:50px; text-align:center; color:white; position:relative; overflow:hidden;">
+                <div style="position:absolute;top:-20px;left:-20px;font-size:8rem;opacity:0.1;">🐾</div>
+                <div style="position:absolute;bottom:-20px;right:-20px;font-size:8rem;opacity:0.1;">🐾</div>
+                <h2 style="font-size:2rem; margin-bottom:10px;">Stay Updated with Pet Tips & Deals</h2>
+                <p style="opacity:0.9; margin-bottom:30px;">Join 10,000+ pet parents who receive our monthly newsletter</p>
+                <form id="newsletterForm" style="display:flex; gap:10px; max-width:500px; margin:0 auto 15px;">
+                    <input type="email" placeholder="Enter your email address" required
+                           style="flex:1; padding:14px 20px; border:none; border-radius:8px; font-size:1rem; font-family:inherit;">
+                    <button type="submit" class="btn btn-outline" style="color:white; border-color:white; white-space:nowrap;">
+                        Subscribe
+                    </button>
+                </form>
+                <p style="opacity:0.7; font-size:0.85rem;">We respect your privacy. Unsubscribe anytime.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         FOOTER
+    ========================================== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <img src="images/logo-pet-prestige.png" alt="Pet Prestige" style="height:60px; margin-bottom:15px;"
+                         onerror="this.outerHTML='<div style=\'font-size:2rem; margin-bottom:15px;\'>🐾</div>'">
+                    <p>Philippines' trusted destination for premium pet care since 2025.</p>
+                    <div class="social-links" style="margin-top:20px;">
+                        <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" title="YouTube"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="shop.html?category=dogs">Dogs</a></li>
+                        <li><a href="shop.html?category=cats">Cats</a></li>
+                        <li><a href="shop.html?category=birds">Birds</a></li>
+                        <li><a href="shop.html?category=fish">Fish</a></li>
+                        <li><a href="shop.html?category=small-pets">Small Pets</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="learn.html">Pet Care Guides</a></li>
+                        <li><a href="lost-found.html">Lost &amp; Found</a></li>
+                        <li><a href="community.html">Community Forum</a></li>
+                        <li><a href="terms.html">Terms &amp; Conditions</a></li>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-contact">
+                    <h4>Get in Touch</h4>
+                    <p><i class="fas fa-phone"></i> +63 912 345 6789</p>
+                    <p><i class="fas fa-envelope"></i> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="fa929f969695ba8a9f8e8a889f898e939d9fd48a92">[email&#160;protected]</a></p>
+                    <p><i class="fas fa-map-marker-alt"></i> Sapang Dalaga, Misamis Occidental</p>
+                    <p style="margin-top:15px; font-size:0.85rem; opacity:0.7;">
+                        <i class="fas fa-clock"></i> Mon–Sat, 8AM–6PM PHT
+                    </p>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>© 2026 Pet Prestige. All rights reserved.</p>
+                <p style="margin-top:5px;">Made with 🐾 in the Philippines</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top -->
+    <button id="backToTop" class="back-to-top" style="display:none; position:fixed; bottom:100px; right:30px; width:48px; height:48px; border-radius:50%; background:var(--primary); color:white; border:none; font-size:1.2rem; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,0.2); z-index:1000; transition:all 0.3s;">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Support Chat Widget — AI Powered -->
+    <div class="chat-widget" id="chatWidget" style="display:none;">
+        <div class="chat-header">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="position:relative;">
+                    <div style="width:36px;height:36px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🐾</div>
+                    <div style="position:absolute;bottom:0;right:0;width:10px;height:10px;background:#2ecc71;border-radius:50%;border:2px solid var(--primary);"></div>
+                </div>
+                <div>
+                    <h4 style="margin:0;font-size:0.95rem;">Pet Prestige AI Support</h4>
+                    <span style="font-size:0.72rem;opacity:0.85;">🟢 Online — Powered by Claude AI</span>
+                </div>
+            </div>
+            <button onclick="closeSupportChat()" style="background:none;border:none;color:white;cursor:pointer;font-size:1.1rem;padding:4px;"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="chat-message bot">
+                <p>Hi there! 👋 I'm Pet Prestige's AI assistant. I can help with pet care advice, product questions, orders, and shipping. What can I help you with today? 🐾</p>
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Ask me anything about pets..."
+                   onkeypress="handleChatKeyPress(event)" autocomplete="off">
+            <button onclick="sendChatMessage()" title="Send"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <button class="chat-toggle" onclick="openSupportChat()" id="chatToggle" title="Support Chat">
+        <i class="fas fa-comments"></i>
+    </button>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+<script src="js/api.js"></script>
+<script src="js/script.js"></script>
+<script src="js/api-bridge.js"></script> <script>
+  
+        document.addEventListener('DOMContentLoaded', function() {
+            // Newsletter
+            const newsletterForm = document.getElementById('newsletterForm');
+            if (newsletterForm) {
+                newsletterForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const email = this.querySelector('input[type="email"]').value;
+                    if (subscribeNewsletter(email)) this.reset();
+                });
+            }
+
+            // Back to top button
+            const backToTop = document.getElementById('backToTop');
+            window.addEventListener('scroll', () => {
+                backToTop.style.display = window.scrollY > 300 ? 'flex' : 'none';
+            });
+            backToTop.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>
