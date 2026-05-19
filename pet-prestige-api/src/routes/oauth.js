@@ -1,4 +1,5 @@
 // src/routes/oauth.js — Google OAuth 2.0
+const fetch = global.fetch;
 const express = require('express');
 const jwt     = require('jsonwebtoken');
 const bcrypt  = require('bcryptjs');

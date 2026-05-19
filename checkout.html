@@ -777,12 +777,37 @@ placeOrder = async function() {
 
     try {
         const data = await API.orders.place(orderData);
-        // Clear cart
-        cart = [];
-        appliedVoucher = null;
-        localStorage.removeItem('petPrestigeCart');
-        localStorage.removeItem('petPrestigeVoucher');
-        window.location.href = 'order-success.html?order=' + data.order.order_number;
+
+// SAVE ORDER TO LOCALSTORAGE
+let orders = JSON.parse(
+    localStorage.getItem('petPrestigeOrders')
+) || [];
+
+const newOrder = {
+    ...orderData,
+    items: cart,
+    order_number: data.order.order_number,
+    created_at: new Date().toISOString()
+};
+
+orders.push(newOrder);
+
+localStorage.setItem(
+    'petPrestigeOrders',
+    JSON.stringify(orders)
+);
+
+// Clear cart
+cart = [];
+appliedVoucher = null;
+
+localStorage.removeItem('petPrestigeCart');
+localStorage.removeItem('petPrestigeVoucher');
+
+// Redirect
+window.location.href =
+    'order-success.html?order=' +
+    data.order.order_number;
     } catch(err) {
         console.error('API order failed, falling back to localStorage:', err);
         _localPlaceOrder();
