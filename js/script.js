@@ -319,15 +319,13 @@ function closeLoginOverlay() {
 }
 
 function logout() {
-    localStorage.removeItem('petPrestigeUser');
-    localStorage.removeItem('petPrestigeAdminSession');
-    localStorage.removeItem('petPrestigeLoginRedirect');
-    localStorage.removeItem('petPrestigeVoucher');
-    cart = [];
-    saveCart();
-    updateCartCount();
-    showToast('Logged out successfully.');
-    setTimeout(() => window.location.href = 'index.html', 1000);
+    if (confirm('Are you sure you want to logout?')) {
+        API.clearToken(); // ← this removes petPrestigeToken + petPrestigeUser + more
+        cart = [];
+        saveCart();
+        updateCartCount();
+        window.location.href = 'login.html';
+    }
 }
 
 // ==========================================
